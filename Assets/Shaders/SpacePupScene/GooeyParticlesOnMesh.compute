@@ -1,0 +1,290 @@
+﻿#pragma kernel Transfer
+#pragma kernel TriLocation
+#pragma kernel Resolve
+
+
+struct Vert{
+  float3 pos;
+  float3 nor;
+  float3 tang;
+  float2 uv;
+  float  debug;
+};
+
+struct Particle{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 og;
+  float2 uv;
+  float2 debug;
+  float4 resolver;
+  float3 connections[16];
+};
+
+
+
+RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Particle> _ParticleBuffer;
+RWStructuredBuffer<int> _TriBuffer;
+
+int _VertBuffer_COUNT;
+int _ParticleBuffer_COUNT;
+int _TriBuffer_COUNT;
+
+
+float _Scale;
+int _VertsPerMesh;
+float _Time;
+
+float3 _RO;
+float3 _RD;
+float  _DOWN;
+
+float3 _Velocity;
+
+float4x4 _Transform;
+
+
+
+struct Human {
+  float4x4 leftHand;
+  float4x4 rightHand;
+  float4x4 head;
+  float leftTrigger;
+  float rightTrigger;
+  float voice;
+  float debug;
+};
+
+RWStructuredBuffer<Human> _HumanBuffer;
+int _HumanBuffer_COUNT;
+
+
+#include "../Chunks/safeID.cginc"
+#include "../Chunks/snoise.cginc"
+#include "../Chunks/curlNoise.cginc"
+#include "../Chunks/GetRayForce.cginc"
+
+
+float3 HumanForces(float3 p){
+  float3 totalForce;
+  
+  for( int i = 0; i < _HumanBuffer_COUNT; i++ ){
+    Human h = _HumanBuffer[i];
+
+    float3 hL = mul(h.leftHand,float4(0,0,0,1));
+    float3 hR = mul(h.rightHand,float4(0,0,0,1));
+    float3 hH = mul(h.head,float4(0,0,0,1));
+
+    float3 d;
+
+    d = p - hL;
+
+    if( length( d ) < 1 && length(d) > .01 ){ 
+      totalForce += normalize( d ) / length(d);
+    }
+
+
+     d = p - hR;
+    if( length( d ) < 1 && length(d) > .01 ){ 
+      totalForce += normalize( d ) / length(d);
+    }
+  }
+
+  return totalForce * .001;
+}
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+  if( pID < _ParticleBuffer_COUNT ){
+    
+    int sID = safeID( pID, _ParticleBuffer_COUNT );
+    int vID = safeID( pID, _VertBuffer_COUNT );
+    Particle p = _ParticleBuffer[sID];
+    Vert v = _VertBuffer[vID];
+
+    p.nor = normalize( mul(_Transform , float4( -v.nor ,0 ) ).xyz);
+
+    float3 targetPos = mul(_Transform , float4( v.pos , 1 ) ).xyz;
+
+    if( length(p.pos - targetPos) > 40 ){
+      //p.pos = targetPos;
+    }
+
+    float3 force = 0;
+
+    float velMatch = (1-dot( p.nor , normalize(_Velocity) ));
+
+    p.og = v.pos;
+
+    targetPos = mul(_Transform , float4( v.pos   , 1 ) ).xyz;
+    //targetPos -= 10*p.nor * -dot( p.nor , normalize(_Velocity) ) * length( _Velocity);
+
+    force -= (p.pos - targetPos) * .02;// * velMatch;
+    force += curlNoise( p.pos * 1.1 + _Time * .2 ) * .004;
+
+
+    force += HumanForces(p.pos) * 20;
+
+
+   
+    if( length(force) > 10 ){ force = normalize(force) * 10; }
+    if( length(p.vel) > 10 ){ p.vel = normalize(p.vel) * 10; }
+
+
+    p.vel += force * .1;
+    p.pos += p.vel;
+    p.vel *= .9;
+    p.debug = length( p.pos - targetPos);
+
+
+
+    p.uv = v.uv;
+
+    //p.pos = mul(_Transform , float4( v.pos ,1 ) ).xyz;
+
+    //p.debug = length(inLine);
+    //p.pos = targetPos;
+
+    _ParticleBuffer[sID] = p;
+
+
+  }
+
+}
+
+float3 getOffset( Particle p1 , Particle p2 , Vert v1 , Vert v2 ){
+
+    float ogL = length(v1.pos - v2.pos);
+   
+    float3 dif =  p1.pos - p2.pos;
+    float l = length(dif);
+
+
+     float difference = 0;
+
+      // We want to make sure that l isn't zero, 
+      // or we will get some NaNs
+      if( l > 0.001 ){
+        difference = (ogL-l);//((s*v1.debug.x/float(_NumVertsPerHair)) - l ) / l;
+        dif = normalize(dif);
+      }
+
+    // Here is where the actual verlet goes down!
+    float3 translate = dif * .5 * difference;
+
+    return translate;
+
+
+}
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void TriLocation (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+
+  if( pID < _ParticleBuffer_COUNT ){
+
+    int sID = safeID( pID, _ParticleBuffer_COUNT );
+    Particle p  = _ParticleBuffer[sID];
+    Vert v      = _VertBuffer[sID];
+
+    p.resolver += float4( p.pos , 1 );
+
+    for(int i = 0; i < 16; i++ ){
+
+      float3 connection = p.connections[i];
+
+      if( connection.z > .1 ){
+
+        int id2 = (int)connection.x;
+
+        Particle p2 = _ParticleBuffer[safeID(id2,_ParticleBuffer_COUNT)];
+        Vert v2 = _VertBuffer[safeID(id2,_ParticleBuffer_COUNT)];
+
+        float3 translate = getOffset( p,p2,v,v2);
+
+        p.resolver += float4( p.pos + translate , 1);
+
+      }
+
+    }
+
+    _ParticleBuffer[sID] = p;
+  
+  }
+
+}
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+  int pID = threadID + u3GroupID.x * NR_THREADS;
+
+
+
+    int sID = safeID( pID, _ParticleBuffer_COUNT );
+    if( pID < _ParticleBuffer_COUNT ){
+    
+      Particle p = _ParticleBuffer[sID];
+
+      
+      if(p.resolver.w != 0 ){ p.resolver.xyz /= p.resolver.w; }
+
+
+      if( length( p.pos-p.resolver.xyz) != 0 ){
+        p.vel -= clamp( pow( length(p.pos - p.resolver.xyz) , 2 )* 100 , -.1 , .1) * normalize(p.pos-p.resolver.xyz);//
+      }
+
+      float3 nor = float3(0,1,0);
+      for( int i = 0; i < 16; i++ ){
+
+
+        float3 connection = p.connections[i];
+
+        if( connection.z > .0000000000 ){
+          int id1 = (int)connection.x;
+          int id2 = (int)connection.y;
+          Particle p1 = _ParticleBuffer[safeID(id1,_ParticleBuffer_COUNT)];
+          Particle p2 = _ParticleBuffer[safeID(id2,_ParticleBuffer_COUNT)];
+
+
+          nor += normalize(cross( p.pos*1000 - p1.pos * 1000 , p.pos*1000 - p2.pos * 1000 ));
+
+        }
+
+
+      }
+
+      if( p.resolver.w != 0 ){
+        nor /= p.resolver.w;
+        nor = normalize( nor );
+      }
+
+
+      p.nor = nor;
+
+
+
+      p.resolver = 0;
+
+      _ParticleBuffer[sID] = p;
+
+    }
+
+
+  
+
+}
