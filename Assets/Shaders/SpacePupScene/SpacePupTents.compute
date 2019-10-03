@@ -226,7 +226,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     float2 xz = 1*normalize( vert.pos.xz - _PlayerPosition.xz ) / (.1 + pow(length(vert.pos.xz - _PlayerPosition.xz), 10));
 
     force += float3(xz.x , 0 , xz.y );
-    force += curlNoise( vert.pos  );// * _NoiseForce;
+    force += curlNoise( vert.pos  * .4 ) * .3;// * _NoiseForce;
 
     float3 c = mul(_Transform , float4(0,0,0,1)).xyz;
 

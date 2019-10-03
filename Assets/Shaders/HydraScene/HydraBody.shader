@@ -253,7 +253,7 @@ Pass replace
 
         
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * .02;
+                float3 fPos = v.pos + v.nor * .004;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 

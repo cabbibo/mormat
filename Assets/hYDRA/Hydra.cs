@@ -46,8 +46,17 @@ public class Hydra : Cycle
     [Range(0f,.01f)]
   public float brainToFoodForce;
 
+
+
+
   [Range(0f,11f)]
   public float brainToFoodDist;
+
+      [Range(0f,.01f)]
+  public float brainToPersonForce;
+
+    [Range(0f,11f)]
+  public float brainToPersonDist;
 
 
   [Range(0f,.01f)]
@@ -232,8 +241,11 @@ public class Hydra : Cycle
     }
 
     if( lookingAtPerson ){
-      force += (person.position - brain.position).normalized * .01f;
-      target = person;
+
+      if((person.position - brain.position).magnitude < brainToPersonDist ){
+        force += (person.position - brain.position).normalized *  brainToPersonForce;
+        target = person;
+      }
     }else{
       target =  food.foods[cID]; 
 

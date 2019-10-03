@@ -42,6 +42,7 @@ float3 _RD;
 float  _DOWN;
 
 float3 _Velocity;
+float3 _Target;
 
 float4x4 _Transform;
 
@@ -123,8 +124,11 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     p.og = v.pos;
 
     targetPos = mul(_Transform , float4( v.pos   , 1 ) ).xyz;
-    //targetPos -= 10*p.nor * -dot( p.nor , normalize(_Velocity) ) * length( _Velocity);
 
+  if( length(_Velocity ) > 0 ){
+   targetPos += 10*_Velocity * -dot( p.nor , normalize(_Velocity) ) * length( _Velocity);
+  // targetPos += 10*p.nor*clamp( dot( p.nor , normalize(_Velocity) ),0,1) * length(_Velocity);
+}
     force -= (p.pos - targetPos) * .02;// * velMatch;
     force += curlNoise( p.pos * 1.1 + _Time * .2 ) * .004;
 
@@ -270,6 +274,8 @@ void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
       if( p.resolver.w != 0 ){
         nor /= p.resolver.w;
+        nor = normalize( nor );
+      }else{
         nor = normalize( nor );
       }
 

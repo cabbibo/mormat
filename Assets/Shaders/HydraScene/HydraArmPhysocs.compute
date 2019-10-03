@@ -134,7 +134,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     float3 force = 0;// float3(0,1,0);//float3( 0 , base.nor , 0.0 );
 
 
-    force += lerp( bN1 , bN2 , vert.uv.x ) * 100.5 * pow( vert.uv.x-.5 , 2);
+    force += lerp( bN1 , bN2 , vert.uv.x ) * 100.5;// * pow( vert.uv.x-.5 , 2);
 
     float3 brainDif = _BrainPosition - vert.pos;
 
@@ -164,7 +164,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
       float angle = -(float(bID)- 6) / 24;
       angle *= 6.28;
 
-      float r = .6;
+      float r = .0;
     // If we are at the bottom, 
     if( vert.uv.x == 0 ){ 
       vert.pos =  bP1 + r*cos(angle) * bX + r*sin(angle) *bY; 
@@ -202,7 +202,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     if( _Delta  < .1 && tb == false ){
 
       float dampening =.9;//_Dampening;//.99999;// - vert.life * .01;
-      float3 next = vert.pos + vel  * dampening + force * .01;
+      float3 next = vert.pos + vel  * dampening + force * .0001;
 
       vert.oPos = vert.pos;
       vert.pos = next;
@@ -294,7 +294,7 @@ void StalkCollision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID
     if( _Delta  < .1 && tb == false ){
 
       float dampening =.9;//_Dampening;//.99999;// - vert.life * .01;
-      float3 next = vert.pos + vel  * dampening + force * .01;
+      float3 next = vert.pos + vel  * dampening + force * .001;
 
       vert.oPos = vert.pos;
       vert.pos = next;

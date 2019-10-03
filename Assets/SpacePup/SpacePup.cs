@@ -60,15 +60,15 @@ public class SpacePup : Cycle
 
   public override void WhileLiving( float v ){
 
-    //force = Vector3.zero;
-//
-    //force += (target.position - transform.position);
-//
-    //velocity += force;
-//
-    //velocity  *= .9f;
-//
-    //transform.position += velocity;
+    force = Vector3.zero;
+    
+    force += .1f*(target.position - transform.position);
+    
+    velocity += force;
+    
+    velocity  *= .9f;
+    
+    transform.position += velocity;
 
   }
 

@@ -78,7 +78,7 @@ public class Food : Cycle
 
         force = Vector3.zero;
 
-        force += Vector3.up;
+        force += Vector3.up * .06f;
         vels[i] += force * .002f;
         foods[i].position += vels[i];
 

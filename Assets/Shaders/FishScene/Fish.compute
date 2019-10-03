@@ -121,9 +121,9 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     float3 up = mul( _Transform,float4(0,1,0,0));
     float3 right = mul( _Transform,float4(1,0,0,0));
     float3 back = mul( _Transform,float4(0,0,1,0));
-    vert.pos += up   * .16;//  * ( hash(float(pID * 31)) - .5) * .2;
-    vert.pos += right * ( hash(float(pID * 41)) - .5) * .16;
-    vert.pos += back  * ( hash(float(pID * 21)) - .5) * .16;
+    vert.pos += 10*up   * ( hash(float(pID * 41)) - .5) * .16;//  * ( hash(float(pID * 31)) - .5) * .2;
+    vert.pos += 10*right * ( hash(float(pID * 41)) - .5) * .16;
+    vert.pos += 10*back  * ( hash(float(pID * 21)) - .5) * .16;
 
     float3 v = float3( hash(float(pID * 20)),hash(float(pID * 42)),hash(float(pID * 32)));
     v -= .5;
@@ -142,10 +142,10 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     float dist = map( vert.pos );
     float3 nor = getNor( vert.pos ); 
     if( dist < 0 ){ force += nor  * .001; }
-    if( dist < .4 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
-    force -=  dist * cross( nor ,float3(0,1,0)) * .001 + dist * nor * .001;
+    if( dist < .03 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
+    force -=  dist * cross( nor ,float3(0,1,0)) * .004 + dist * nor * .004;
     
-    vert.vel += force;
+    vert.vel += force * .7;
     vert.pos += vert.vel;
 
 
