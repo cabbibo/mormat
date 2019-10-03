@@ -221,12 +221,12 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     float3 bN = -base.nor;//normalize(mul( transform,  float4(base.nor,0))).xyz;
     float3 s = float3(1,1,1);//mul( transform , float4(1,1,1,0)).xyz;
 
-    float3 force = -bN * 4 * (1-vert.uv.x * vert.uv.x);//float3( 0 , base.nor , 0.0 );
+    float3 force = -bN * 1 * (1-vert.uv.x * vert.uv.x);//float3( 0 , base.nor , 0.0 );
 
     float2 xz = 1*normalize( vert.pos.xz - _PlayerPosition.xz ) / (.1 + pow(length(vert.pos.xz - _PlayerPosition.xz), 10));
 
     force += float3(xz.x , 0 , xz.y );
-    force += curlNoise( vert.pos  * .4 ) * .3;// * _NoiseForce;
+    force += curlNoise( vert.pos  * 3.4 ) * .3;// * _NoiseForce;
 
     float3 c = mul(_Transform , float4(0,0,0,1)).xyz;
 

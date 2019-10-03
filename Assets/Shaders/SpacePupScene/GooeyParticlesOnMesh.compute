@@ -130,7 +130,7 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   // targetPos += 10*p.nor*clamp( dot( p.nor , normalize(_Velocity) ),0,1) * length(_Velocity);
 }
     force -= (p.pos - targetPos) * .02;// * velMatch;
-    force += curlNoise( p.pos * 1.1 + _Time * .2 ) * .004;
+    force += curlNoise( p.pos * 4.1 + _Time * .2 ) * .001;
 
 
     force += HumanForces(p.pos) * 20;
@@ -164,7 +164,7 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 float3 getOffset( Particle p1 , Particle p2 , Vert v1 , Vert v2 ){
 
-    float ogL = length(v1.pos - v2.pos);
+    float ogL = length(v1.pos - v2.pos) * .1;
    
     float3 dif =  p1.pos - p2.pos;
     float l = length(dif);
