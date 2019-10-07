@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+  
 public class InstancedMeshVerts : MeshVerts {
 
   public MeshVerts verts;
@@ -17,7 +17,7 @@ public class InstancedMeshVerts : MeshVerts {
     public float debug;
   };*/
 
-  public override void SetStructSize(){ structSize = 12; }
+  public override void SetStructSize(){ structSize = 16; }
 
   public override void SetCount(){ 
 
@@ -41,18 +41,24 @@ public class InstancedMeshVerts : MeshVerts {
         values[ index ++ ] = data[0+i *structSize];
         values[ index ++ ] = data[1+i *structSize];
         values[ index ++ ] = data[2+i *structSize];
-
-        values[ index ++ ] = data[3+i *structSize];
-        values[ index ++ ] = data[4+i *structSize];
-        values[ index ++ ] = data[5+i *structSize];
-
+       
+        values[ index ++ ] = 0;
+        values[ index ++ ] = 0;
+        values[ index ++ ] = 0;
+       
         values[ index ++ ] = data[6+i *structSize];
         values[ index ++ ] = data[7+i *structSize];
         values[ index ++ ] = data[8+i *structSize];
 
-        values[ index ++ ] = data[9+i *structSize];
+        values[ index ++ ] = data[9 +i *structSize];
         values[ index ++ ] = data[10+i *structSize];
         values[ index ++ ] = data[11+i *structSize];
+
+        values[ index ++ ] = data[12 +i *structSize];
+        values[ index ++ ] = data[13+i *structSize];
+
+        values[ index ++ ] = 0;
+        values[ index ++ ] = 0;
 
       }
     }

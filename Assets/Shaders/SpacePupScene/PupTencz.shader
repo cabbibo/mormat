@@ -264,7 +264,7 @@ Pass replace
             fixed4 frag (v2f v) : SV_Target
             {
               
-                fixed4 col = tex2D(_ColorMap, float2( .95,0));//float4(1,0,0,1);
+                fixed4 col = 0;//tex2D(_ColorMap, float2( .95,0));//float4(1,0,0,1);
                 return col;
             }
 

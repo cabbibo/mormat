@@ -103,8 +103,8 @@ public class Form : Cycle {
   public override void WhileDebug(){
     mpb.SetBuffer("_VertBuffer", _buffer);
     mpb.SetInt("_Count",count);
-
-    Graphics.DrawProcedural(debugMaterial,  new Bounds(transform.position, Vector3.one * 50000), MeshTopology.Triangles, count * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
+    
+    Graphics.DrawProcedural(debugMaterial,  new Bounds(transform.position, Vector3.one * 5000), MeshTopology.Triangles, count * 3 * 2 , 1, null, mpb, ShadowCastingMode.Off, true, LayerMask.NameToLayer("Debug"));
 
   }
 

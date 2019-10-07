@@ -23,6 +23,8 @@ Shader "Custom/VolumetricBasic" {
 
     Pass {
 
+      Cull Front
+
       CGPROGRAM
 
       #pragma vertex vert

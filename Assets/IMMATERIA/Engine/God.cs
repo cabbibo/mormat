@@ -27,9 +27,7 @@ public override void Create(){
 }
 
 
-public void OnRenderObject(){
-    if( created ){ _WhileDebug(); }
-}
+
 
 public void LateUpdate(){
 
@@ -41,6 +39,9 @@ public void LateUpdate(){
     if( birthing ){ _WhileBirthing(1);}
     if( living ){ _WhileLiving(1); }
     if( dying ){ _WhileDying(1); }
+
+    if( created ){ _WhileDebug(); }
+
 }
 
 

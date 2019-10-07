@@ -7,6 +7,16 @@
     _MainTex ("Texture", 2D) = "white" {}
     _BumpMap ("Bumpy", 2D) = "white" {}
 
+    _ColorStart( "ColorStart" , float ) = .2
+    _ColorWidth( "ColorWidth" , float ) = .4
+    _OutlineColor( "OutlineColor" , float ) = .4
+
+
+       _PLightMap1 ("PLightMap1", 2D) = "white" {}
+       _PLightMap2 ("PLightMap2", 2D) = "white" {}
+       _PLightMap3 ("PLightMap3", 2D) = "white" {}
+       _PLightMap4 ("PLightMap4", 2D) = "white" {}
+       _PLightMap5 ("PLightMap5", 2D) = "white" {}
        _ColorMap ("ColorMap", 2D) = "white" {}
   }
 
@@ -14,6 +24,15 @@
         // COLOR PASS
 
         Pass {
+
+          // Lighting/ Texture Pass
+Stencil
+{
+Ref 6
+Comp always
+Pass replace
+ZFail keep
+}
             Tags{ "LightMode" = "ForwardBase" }
             Cull Off
 
@@ -43,6 +62,9 @@
   StructuredBuffer<int> _TriBuffer;
 
 
+  float _ColorStart;
+  float _ColorWidth;
+
       float3 _Color;
       float3 _PlayerPosition;
       float _FalloffRadius;
@@ -67,6 +89,12 @@
                 UNITY_SHADOW_COORDS(2)
             };
 
+
+            sampler2D _PLightMap1;
+            sampler2D _PLightMap2;
+            sampler2D _PLightMap3;
+            sampler2D _PLightMap4;
+            sampler2D _PLightMap5;
             varyings vert(uint id : SV_VertexID) {
 
                    Vert v = _VertBuffer[_TriBuffer[id]];
@@ -84,10 +112,10 @@
                 o.pos = mul(UNITY_MATRIX_VP, float4(fPos,1));
                 o.worldPos = fPos;
                 o.eye = _WorldSpaceCameraPos - fPos;
-        o.nor = fNor;
+                o.nor = v.tan;//-normalize(cross(v.nor , v.tan));
                 o.vel = fVel;
 
-        float offset = floor(hash(debug.x) * 6) /6;
+                float offset = floor(hash(debug.x) * 6) /6;
                 o.uv =  fUV * float2(1,1./6.) + float2(-.1,offset);
                 o.debug = float3(debug.x,debug.y,0);
 
@@ -131,14 +159,50 @@
                 half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, worldRefl);
                 half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
 
-              float4 cCol = tex2D(_ColorMap,float2(tCol.x * .3 - tCol.a*.3,0) );
+
+                float4 p1 = tex2D( _PLightMap1 , v.uv * float2(.1,3.8)*2 );
+                float4 p2 = tex2D( _PLightMap2 , v.uv * float2(.1,3.8)*2 );
+                float4 p3 = tex2D( _PLightMap3 , v.uv * float2(.1,3.8)*2 );
+                float4 p4 = tex2D( _PLightMap4 , v.uv * float2(.1,3.8)*2 );
+                float4 p5 = tex2D( _PLightMap5 , v.uv * float2(.1,3.8)*2 );
+
+                float3 fNor = v.nor;
+
+                fNor = v.tang;//normalize(cross(normalize(v.vel* 100), v.nor));
+                float m = dot(_WorldSpaceLightPos0.xyz , fNor);
+
+                float fern = dot( _WorldSpaceLightPos0, normalize(fNor) );
+ 
+                //m = 1-1.5*fern;//1-pow(fern,.7);//*fern*fern;//pow( fern * fern, 1);
+                //m = saturate( 1-m );
+                //m = 5 * m;
+
+                m =  3-3*( .8*UNITY_SHADOW_ATTENUATION(v,v.worldPos));
+
+                float4 fLCol = float4(1,0,0,1);
+                if( m < 1 ){
+                    fLCol = lerp( p1 , p2 , saturate(m) );
+                }else if( m >= 1 && m < 2){
+                    fLCol = lerp( p2 , p3 , m-1 );
+                }else if( m >= 2 && m < 3){
+                    fLCol = lerp( p3 , p4 , m-2 );
+                }else if( m >= 3 && m < 4){
+                    fLCol = lerp( p4 , p5 , m-3 );
+                }else if( m >= 4 && m < 5){
+                    fLCol = lerp( p5 , p5 , m-4 );
+                }else{
+                    fLCol = p5;
+                }
+
+
+              float4 cCol = tex2D(_ColorMap,float2(tCol.x * _ColorWidth + _ColorStart,0) );
         
-              fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos  ) * .7 + .3 ;
+            //  fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos  ) * .7 + .3 ;
               
-              color.xyz = skyColor  * cCol ;// * tCol;;//worldNormal * .5 + .5;//tCol;
+              color.xyz =(fLCol * .8 + .2) * cCol;//skyColor  * cCol ;// * tCol;;//worldNormal * .5 + .5;//tCol;
              // color =  float4(v.nor * .5 + .5,1);//v.uv.x;
               if( tCol.a < .3 ){ discard; }    
-              return float4( color.xyz * shadow, 1.);
+              return float4( color.xyz, 1.);
             }
 
             ENDCG
@@ -205,7 +269,7 @@ sampler2D _MainTex;
         float offset = floor(hash(debug.x) * 6) /6;
                o.uv =  fUV * float2(1,1./6.) + float2(-.1,offset);
         //o.uv = fUV.xy  -float2(0.1,0);// *float2(1./6.,1);;
-        float4 position = ShadowCasterPos(v.pos, -v.nor);
+        float4 position = ShadowCasterPos(v.pos, -v.tan);
         o.pos = UnityApplyLinearShadowBias(position);
         o.debug = debug;
         return o;
@@ -222,6 +286,78 @@ sampler2D _MainTex;
       ENDCG
     }
   
+   Pass
+    {
+
+// Outline Pass
+Cull OFF
+ZWrite OFF
+ZTest ON
+Stencil
+{
+Ref 6
+Comp notequal
+Fail keep
+Pass replace
+}
+      
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma target 4.5
+            // make fog work
+            #pragma multi_compile_fogV
+ #pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
+
+      #include "UnityCG.cginc"
+      #include "AutoLight.cginc"
+    
+
+
+            #include "../Chunks/Struct16.cginc"
+            #include "../Chunks/hash.cginc"
+
+
+            struct v2f { 
+              float4 pos : SV_POSITION; 
+              float2 uv : TEXCOORD1; 
+            };
+            float4 _Color;
+            float _OutlineColor;
+
+            sampler2D _MainTex;
+
+            StructuredBuffer<Vert> _VertBuffer;
+            StructuredBuffer<int> _TriBuffer;
+
+            v2f vert ( uint vid : SV_VertexID )
+            {
+                v2f o;
+
+              int id = _TriBuffer[vid];
+              id %= 2;
+                Vert v = _VertBuffer[_TriBuffer[vid]];
+                float3 fPos = v.pos + normalize(v.nor) * (float(id)-.5)* .01;
+                o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
+                float offset = floor(hash(v.debug.x) * 6) /6;
+                o.uv =  v.uv * float2(1,1./6.) + float2(-.1,offset);
+
+             
+                return o;
+            }
+
+            sampler2D _ColorMap;
+            fixed4 frag (v2f v) : SV_Target
+            {
+              
+              float4 tCol = tex2D(_MainTex,v.uv );
+              if( tCol.a < .3 ){ discard; } 
+                fixed4 col = 0;//1;//tex2D(_ColorMap, float2( _OutlineColor ,0));//float4(1,0,0,1);
+                return col;
+            }
+
+            ENDCG
+        }
 
 
     }

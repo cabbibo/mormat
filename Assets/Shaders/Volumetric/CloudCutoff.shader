@@ -28,6 +28,7 @@ Shader "Custom/CloudCutoff" {
       
       //Blend SrcAlpha OneMinusSrcAlpha // Alpha blending
 
+      Cull Front
 
       CGPROGRAM
 

@@ -4,6 +4,9 @@ using System.Collections;
 
 [ExecuteInEditMode]
 public class CaptureTest : MonoBehaviour {
+   
+
+
     // Capture frames as a screenshot sequence. Images are
     // stored as PNG files in a folder - these can be combined into
     // a movie using image utility software (eg, QuickTime Pro).
@@ -31,12 +34,14 @@ public class CaptureTest : MonoBehaviour {
         // Create the folder
         System.IO.Directory.CreateDirectory(final);
 
-
+        startFrameCount = Time.frameCount;
     }
 
 
 
-    void Update () {
+    void LateUpdate () {
+
+        //print("hellos");
 
         if( oldFolderName != folderName ){
             
@@ -50,7 +55,7 @@ public class CaptureTest : MonoBehaviour {
 
         if( capturing == true && oCapturing == false ){
             Time.captureFramerate = frameRate;
-            startFrameCount = Time.frameCount;
+           
         }
 
          if( capturing == false && oCapturing == true ){

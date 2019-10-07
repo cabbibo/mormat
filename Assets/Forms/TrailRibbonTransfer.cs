@@ -56,6 +56,7 @@ public class TrailRibbonTransfer : Cycle {
     data.BindCameraData( parallel );
 
     parallel.BindFloat( "_Radius" ,  () => this.radius );
+    transfer.BindFloat( "_Radius" ,  () => this.radius );
 
   }
 

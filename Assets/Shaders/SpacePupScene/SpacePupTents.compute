@@ -8,6 +8,7 @@
 
 
 float4x4 _Transform; 
+float4x4 _Terrarium; 
 
 float _Delta;
 float _Time;
@@ -127,6 +128,13 @@ float3 calcNormal( in float3 pos ){
 
 */
 
+float sdBox( float3 p, float3 b )
+{
+  float3 d = abs(p) - b;
+  return length(max(d,0.0))
+         + min(max(d.x,max(d.y,d.z)),0.0); // remove this line for an only partially signed sdf 
+}
+
 
 #include "../Chunks/safeID.cginc"
 
@@ -229,6 +237,24 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     force += curlNoise( vert.pos  * 3.4 ) * .3;// * _NoiseForce;
 
     float3 c = mul(_Transform , float4(0,0,0,1)).xyz;
+
+
+
+    //force += HumanForces( fPos );
+    float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
+    float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.35,.35,.35));
+
+
+
+  float3 eps = float3(.001 , 0, 0);
+
+  float3 nor2 = float3(
+      sdBox( mul( _Terrarium , float4( vert.pos + eps.xyy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( vert.pos- eps.xyy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( vert.pos + eps.yxy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( vert.pos- eps.yxy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( vert.pos + eps.yyx ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( vert.pos- eps.yyx ,1)).xyz , float3(.4,.4,.4))
+    );
+
+  if( m < 0 ){ force += 8*m *normalize(terrarium);}//*nor2; }
 
     float3 dif = vert.pos - c;
 

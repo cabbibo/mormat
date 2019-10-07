@@ -1,8 +1,12 @@
 ﻿Shader "Debug/TriConnectedDebug" {
     Properties {
+       _ColorMap ("ColorMap", 2D) = "white" {}
+       _TextureMap ("TextureMap", 2D) = "white" {}
+      
+      _PainterlyLightMap("PLightMap1", 2D) = "white" {}
 
-    _Color ("Color", Color) = (1,1,1,1)
-    _Size ("Size", float) = .01
+      _Color ("Color", Color) = (1,1,1,1)
+      _Size ("Size", float) = .01
     }
 
 

@@ -5,10 +5,11 @@
 
 struct Vert{
   float3 pos;
+  float3 vel;
   float3 nor;
   float3 tang;
   float2 uv;
-  float  debug;
+  float2  debug;
 };
 
 struct Particle{
@@ -22,6 +23,17 @@ struct Particle{
   float3 connections[16];
 };
 
+
+struct Transform {
+  float4x4 localToWorld;
+  float4x4 worldToLocal;
+};
+
+
+
+RWStructuredBuffer<Transform> _TransformBuffer;
+
+int _TransformBuffer_COUNT;
 
 
 RWStructuredBuffer<Vert> _VertBuffer;
@@ -45,7 +57,7 @@ float3 _Velocity;
 float3 _Target;
 
 float4x4 _Transform;
-
+float4x4 _Terrarium;
 
 
 struct Human {
@@ -62,11 +74,18 @@ RWStructuredBuffer<Human> _HumanBuffer;
 int _HumanBuffer_COUNT;
 
 
+
 #include "../Chunks/safeID.cginc"
 #include "../Chunks/snoise.cginc"
 #include "../Chunks/curlNoise.cginc"
 #include "../Chunks/GetRayForce.cginc"
 
+float sdBox( float3 p, float3 b )
+{
+  float3 d = abs(p) - b;
+  return length(max(d,0.0))
+         + min(max(d.x,max(d.y,d.z)),0.0); // remove this line for an only partially signed sdf 
+}
 
 float3 HumanForces(float3 p){
   float3 totalForce;
@@ -96,6 +115,33 @@ float3 HumanForces(float3 p){
   return totalForce * .001;
 }
 
+
+float map( float3 pos ){
+    
+    float minDist = 100000;
+    
+    for( int i = 0; i < _TransformBuffer_COUNT; i++ ){
+      float3 newPos = mul( _TransformBuffer[i].worldToLocal , float4( pos ,1)).xyz;
+      float  dist = sdBox( newPos , float3(.6,.6,.6));
+      minDist = min( minDist ,dist);
+    }
+
+    return minDist;
+}
+
+float3 getNor( float3 pos ){
+  float3 eps = float3(.001 , 0, 0);
+
+  float3 nor = float3(
+      map( pos + eps.xyy ) - map( pos - eps.xyy),
+      map( pos + eps.yxy ) - map( pos - eps.yxy),
+      map( pos + eps.yyx ) - map( pos - eps.yyx)
+    );
+  return normalize( nor  * 1000 );
+}
+
+
+
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
 void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
@@ -119,6 +165,26 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
     float3 force = 0;
 
+
+
+
+
+    //force += HumanForces( p.pos );
+    float3 terrarium = mul( _Terrarium , float4( p.pos,1)).xyz;
+    float m = sdBox( mul( _Terrarium , float4( p.pos,1)).xyz , float3(.35,.35,.35));
+
+
+
+  float3 eps = float3(.001 , 0, 0);
+
+  float3 nor2 = float3(
+      sdBox( mul( _Terrarium , float4( p.pos + eps.xyy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.xyy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( p.pos + eps.yxy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yxy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( p.pos + eps.yyx ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yyx ,1)).xyz , float3(.4,.4,.4))
+    );
+
+  if( m > 0 ){ force -= .1*m *normalize(terrarium);}//*nor2; }
+
     float velMatch = (1-dot( p.nor , normalize(_Velocity) ));
 
     p.og = v.pos;
@@ -133,8 +199,12 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     force += curlNoise( p.pos * 4.1 + _Time * .2 ) * .001;
 
 
-    force += HumanForces(p.pos) * 20;
-
+    //force += HumanForces(p.pos) * 20;
+ 
+    float dist = map( p.pos );
+    float3 nor = getNor( p.pos ); 
+    if( dist < 0 ){ p.pos = p.pos - dist * nor * .01; p.vel *= .5; force -= dist * nor;}
+    //if( dist < .1 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
 
    
     if( length(force) > 10 ){ force = normalize(force) * 10; }
@@ -180,7 +250,7 @@ float3 getOffset( Particle p1 , Particle p2 , Vert v1 , Vert v2 ){
       }
 
     // Here is where the actual verlet goes down!
-    float3 translate = dif * .5 * difference;
+    float3 translate = dif * .5* difference;
 
     return translate;
 
@@ -249,7 +319,7 @@ void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
       if( length( p.pos-p.resolver.xyz) != 0 ){
-        p.vel -= clamp( pow( length(p.pos - p.resolver.xyz) , 2 )* 100 , -.1 , .1) * normalize(p.pos-p.resolver.xyz);//
+        p.vel -= clamp( pow( length(p.pos - p.resolver.xyz) , 2 )* 100 , -.3 , .3)* 1 * normalize(p.pos-p.resolver.xyz);//
       }
 
       float3 nor = float3(0,1,0);

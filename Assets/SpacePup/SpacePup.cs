@@ -17,6 +17,8 @@ public class SpacePup : Cycle
   public Body body;
   public Simulation anchors;
 
+  public TransformBuffer transformBuffer;
+
   public Transform target;
 
   public Vector3 velocity;
@@ -48,6 +50,8 @@ public class SpacePup : Cycle
     life.BindForm("_VertBuffer" , verts );
     
     life.BindVector3("_Velocity" , () => this.velocity );
+
+    life.BindForm("_TransformBuffer", transformBuffer);
 
 
     triLocation.BindPrimaryForm( "_ParticleBuffer" , particles );

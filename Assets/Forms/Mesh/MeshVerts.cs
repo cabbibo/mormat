@@ -10,22 +10,23 @@ public class MeshVerts : Form {
   
   /*struct Vert{
     public Vector3 pos;
+    public Vector3 vel;
     public Vector3 nor;
     public Vector3 tan;
     public Vector2 uv;
-    public float debug;
+    public float2 debug;
   };*/
 
   public override void Create(){
 
-    if( meshFilter == null ){ meshFilter = GetComponent<MeshFilter>(); } 
+    //if( meshFilter == null ){ meshFilter = GetComponent<MeshFilter>(); } 
     mesh = meshFilter.sharedMesh;
 
   }
 
   public override void SetStructSize(){ 
 
-    structSize = 12; 
+    structSize = 16; 
   }
 
   public override void SetCount(){ 
@@ -61,6 +62,10 @@ public class MeshVerts : Form {
       values[ index ++ ] = verts[i].y;
       values[ index ++ ] = verts[i].z;
 
+      values[ index ++ ] = 0;
+      values[ index ++ ] = 0;
+      values[ index ++ ] = 0;
+
       if( transformVerts ){ nors[i] = transform.TransformDirection( nors[i] ); }
       values[ index ++ ] = nors[i].x;
       values[ index ++ ] = nors[i].y;
@@ -93,6 +98,7 @@ public class MeshVerts : Form {
       }
 
       values[ index ++ ] = (float)i/(float)count;
+      values[ index ++ ] = 0;
     }
 
     SetData( values );
