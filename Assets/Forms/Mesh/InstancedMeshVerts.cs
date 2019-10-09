@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
   
-public class InstancedMeshVerts : MeshVerts {
+public class InstancedMeshVerts : Form {
 
   public MeshVerts verts;
   public Form Base;

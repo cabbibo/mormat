@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class TrailRibbonTransfer : Cycle {
   
-  public Life parallel;
   public Form particles;
 
   public Form verts;
@@ -20,7 +19,7 @@ public class TrailRibbonTransfer : Cycle {
     public override void Destroy(){
     Cycles.Remove( body );
     Cycles.Remove( transfer );
-    Cycles.Remove( parallel );
+   // Cycles.Remove( parallel );
   }
 
 
@@ -30,7 +29,7 @@ public class TrailRibbonTransfer : Cycle {
 //    print("CRIATOSZqq");
     SafeInsert(body);
     SafeInsert(transfer);
-    SafeInsert( parallel );
+    //SafeInsert( parallel );
 
   }
 
@@ -47,15 +46,15 @@ public class TrailRibbonTransfer : Cycle {
     TrailParticles s = (TrailParticles)skeleton;
     transfer.BindInt( "_NumVertsPerHair" , () => s.particlesPerTrail);
 
-    parallel.BindPrimaryForm("_ParticleBuffer" , particles);
-    parallel.BindForm("_VertBuffer" , verts );
+    //parallel.BindPrimaryForm("_ParticleBuffer" , particles);
+    //parallel.BindForm("_VertBuffer" , verts );
+//
+    //parallel.BindInt( "_RibbonLength"     ,   () => v.length  );
+    //parallel.BindInt( "_NumVertsPerHair"  ,   () => v.length  );
 
-    parallel.BindInt( "_RibbonLength"     ,   () => v.length  );
-    parallel.BindInt( "_NumVertsPerHair"  ,   () => v.length  );
+    //data.BindCameraData( parallel );
 
-    data.BindCameraData( parallel );
-
-    parallel.BindFloat( "_Radius" ,  () => this.radius );
+    //parallel.BindFloat( "_Radius" ,  () => this.radius );
     transfer.BindFloat( "_Radius" ,  () => this.radius );
 
   }

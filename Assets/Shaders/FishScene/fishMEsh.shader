@@ -1,4 +1,4 @@
-﻿Shader "Scenes/Main/Rocks"
+﻿Shader "Scenes/Fish/FishMish"
 {
         Properties {
 
@@ -6,11 +6,16 @@
        _TextureMap ("TextureMap", 2D) = "white" {}
        _NormalMap ("NormalMap", 2D) = "white" {}
        _ShinyMap ("ShinyMap", 2D) = "white" {}
+
        _PLightMap1 ("PLightMap1", 2D) = "white" {}
        _PLightMap2 ("PLightMap2", 2D) = "white" {}
        _PLightMap3 ("PLightMap3", 2D) = "white" {}
        _PLightMap4 ("PLightMap4", 2D) = "white" {}
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
+
+        _ColorStart("_ColorStart",float) = 0
+        _ColorRandomSize("_ColorRandomSize",float) = 0
+        _ColorStart("_ColorStart",float) = 0
     
     }
 
@@ -25,7 +30,7 @@
 
           Stencil
 {
-Ref 7
+Ref 9
 Comp always
 Pass replace
 ZFail keep
@@ -49,7 +54,8 @@ ZFail keep
                 float3 nor : NORMAL; 
                 float3 world : TEXCOORD1; 
                 float2 uv  : TEXCOORD2; 
-     half3 tspace0 : TEXCOORD11; // tangent.x, bitangent.x, normal.x
+                float2 debug  : TEXCOORD3; 
+      half3 tspace0 : TEXCOORD11; // tangent.x, bitangent.x, normal.x
                 half3 tspace1 : TEXCOORD12; // tangent.y, bitangent.y, normal.y
                 half3 tspace2 : TEXCOORD13; // tangent.z, bitangent.z, normal.z
                 half3 tang : TEXCOORD14; // tangent.z, bitangent.z, normal.z
@@ -72,7 +78,12 @@ LIGHTING_COORDS(5,6)
             sampler2D _PLightMap2;
             sampler2D _PLightMap3;
             sampler2D _PLightMap4;
+
+
             samplerCUBE _CubeMap;
+
+            float _ColorStart;
+            float _ColorRandomSize;
 
             v2f vert ( uint vid : SV_VertexID )
             {
@@ -82,7 +93,9 @@ LIGHTING_COORDS(5,6)
                 o.uv = v.uv;
                 o.nor = v.nor;
                 o.world = v.pos;
-      half3 wNormal = v.nor;
+                o.debug = v.debug;
+
+                 half3 wNormal = v.nor;
                 half3 wTangent = v.tan;
                 // compute bitangent from cross product of normal and tangent
                 //half tangentSign = tangent.w * unity_WorldTransformParams.w;
@@ -91,6 +104,7 @@ LIGHTING_COORDS(5,6)
                 o.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
                 o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
                 o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
+
 
 TRANSFER_VERTEX_TO_FRAGMENT(o);
                 return o;
@@ -103,10 +117,7 @@ float4 p2 = tex2D( _PLightMap2 , v.uv * 3 );
 float4 p3 = tex2D( _PLightMap3 , v.uv * 3 );
 float4 p4 = tex2D( _PLightMap4 , v.uv * 3 );
 
-  float3 fNor = normalize(v.nor);
-                float m = 1-dot(_WorldSpaceLightPos0.xyz , fNor);
 
-             
 
  // sample the normal map, and decode from the Unity encoding
                 half3 tnormal =UnpackNormal(tex2D(_NormalMap, v.uv));// lerp( i.norm ,  , specMap.x);
@@ -120,16 +131,21 @@ float4 p4 = tex2D( _PLightMap4 , v.uv * 3 );
           
                 half3 worldViewDir = normalize(UnityWorldSpaceViewDir(v.world));
                 //half3 worldRefl = reflect(-worldViewDir, worldNormal);
-                half3 worldRefl = reflect(worldViewDir, worldNormal);
+                half3 worldRefl = refract(worldViewDir, worldNormal,.8);
                 half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, worldRefl);
                 half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
 
 
+
                 float3 tCol = texCUBE(_CubeMap,worldRefl);
+  float3 fNor = normalize(v.nor);
+                float m = 1-dot(_WorldSpaceLightPos0.xyz , fNor);
+
+             
 
 ///in frag shader;
 float atten = LIGHT_ATTENUATION(v);
-                //m = 1-pow(-fern,.7);//*fern*fern;//pow( fern * fern, 1);
+                //m = 1-pow(-fern,.5);//*fern*fern;//pow( fern * fern, 1);
                 //m = saturate( 1-m );
 
 //                m = (-m* atten);
@@ -152,14 +168,15 @@ float atten = LIGHT_ATTENUATION(v);
                 }
 
                 // sample the texture
-float4 s2 = tex2D( _ColorMap , float2(m* .04+.5, 0) );
-float4 s3 = tex2D( _TextureMap , v.uv * .3 );
 
 
-float3 shiny = tex2D(_ShinyMap,v.uv);
+                float4 s3 = tex2D( _TextureMap , v.uv );
+                float4 s2 = tex2D( _ColorMap , float2(  sin(v.debug.x) * _ColorRandomSize + _ColorStart, 0) );
+                float3 shiny = tex2D(_ShinyMap,v.uv);
 
- float3 fCol= lerp(s3, length(tCol) * s2, shiny.x) * fLCol;
-               // float3 fCol= fLCol*s2;//v.nor * .5 + .5;
+                float3 fCol=lerp( pow(length(tCol),3)* .3* s2*3, pow(length(tCol),3) * .1 * s2 ,shiny.x)  * .3 + .1;//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
+                
+                fCol*= atten;
                 fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
             }
@@ -240,7 +257,7 @@ ZWrite OFF
 ZTest ON
 Stencil
 {
-Ref 7
+Ref 9
 Comp notequal
 Fail keep
 Pass replace
