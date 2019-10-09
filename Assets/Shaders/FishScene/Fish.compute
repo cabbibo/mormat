@@ -30,6 +30,7 @@ RWStructuredBuffer<Human> _HumanBuffer;
 int _HumanBuffer_COUNT;
 
 RWStructuredBuffer<Vert> _VertBuffer;
+RWStructuredBuffer<Vert> _SpookyBuffer;
 RWStructuredBuffer<Transform> _TransformBuffer;
 
 float4x4 _Transform;
@@ -39,6 +40,7 @@ float4x4 _SpacePup;
 
 int _VertBuffer_COUNT;
 int _TransformBuffer_COUNT;
+int _SpookyBuffer_COUNT;
 
 #include "../Chunks/safeID.cginc"
 #include "../Chunks/snoise.cginc"
@@ -204,6 +206,11 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     );
 
 
+  for(int i = 0; i < _SpookyBuffer_COUNT; i++ ){
+    Vert spooky = _SpookyBuffer[safeID(i,_SpookyBuffer_COUNT)];
+
+    if( length(spooky.pos - vert.pos) < .3 ){ force -= 1000*spooky.pos - 1000*vert.pos; }
+  }
 
 //fPos = terrarium;
     if( m < 0 ){ force += 100*m *nor2; }
@@ -230,7 +237,7 @@ if( length(m2) > 0 && length(m2) < 2){
     if( length(vert.vel)> 1 ){ vert.vel = normalize(vert.vel) * 1;}
     vert.vel += force * .9;
 
-    vert.vel = normalize( vert.vel) * .005;
+    vert.vel = normalize( vert.vel) * .006;
     fPos += vert.vel;
 
 

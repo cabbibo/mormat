@@ -16,6 +16,8 @@
         _ColorStart("_ColorStart",float) = 0
         _ColorRandomSize("_ColorRandomSize",float) = 0
         _ColorStart("_ColorStart",float) = 0
+        _Saturation("_Saturation",float) = .3
+        _Brightness("_Brightness",float) = .1
     
     }
 
@@ -84,6 +86,8 @@ LIGHTING_COORDS(5,6)
 
             float _ColorStart;
             float _ColorRandomSize;
+            float _Saturation;
+            float _Brightness;
 
             v2f vert ( uint vid : SV_VertexID )
             {
@@ -174,7 +178,7 @@ float atten = LIGHT_ATTENUATION(v);
                 float4 s2 = tex2D( _ColorMap , float2(  sin(v.debug.x) * _ColorRandomSize + _ColorStart, 0) );
                 float3 shiny = tex2D(_ShinyMap,v.uv);
 
-                float3 fCol=lerp( pow(length(tCol),3)* .3* s2*3, pow(length(tCol),3) * .1 * s2 ,shiny.x)  * .3 + .1;//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
+                float3 fCol=lerp( pow(length(tCol),3)* .3* s2*3, pow(length(tCol),3) * .1 * s2 ,shiny.x)  *_Saturation + _Brightness;//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
                 
                 fCol*= atten;
                 fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
