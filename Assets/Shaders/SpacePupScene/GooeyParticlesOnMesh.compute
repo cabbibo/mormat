@@ -58,6 +58,19 @@ float3 _Target;
 
 float4x4 _Transform;
 float4x4 _Terrarium;
+float4x4 _FullLTW;
+float4x4 _FullWTL;
+
+float _FullScale;
+
+
+float _HumanDisplacementForce;
+float _HumanDisplacementRadius;
+float _CurlStrength;
+float _CurlSize;
+float _CurlSpeed;
+float _ReturnStrength;
+float _Dampening;
 
 
 struct Human {
@@ -121,7 +134,7 @@ float map( float3 pos ){
     float minDist = 100000;
     
     for( int i = 0; i < _TransformBuffer_COUNT; i++ ){
-      float3 newPos = mul( _TransformBuffer[i].worldToLocal , float4( pos ,1)).xyz;
+      float3 newPos =  mul( _TransformBuffer[i].worldToLocal,float4( pos ,1)).xyz;
       float  dist = sdBox( newPos , float3(.6,.6,.6));
       minDist = min( minDist ,dist);
     }
@@ -155,72 +168,75 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     Particle p = _ParticleBuffer[sID];
     Vert v = _VertBuffer[vID];
 
-    p.nor = normalize( mul(_Transform , float4( -v.nor ,0 ) ).xyz);
 
-    float3 targetPos = mul(_Transform , float4( v.pos , 1 ) ).xyz;
+    float3 fPos = mul(_FullWTL,float4(p.pos,1)).xyz;
 
-    if( length(p.pos - targetPos) > 40 ){
-      //p.pos = targetPos;
-    }
+    float4x4 fTransform = mul( _Transform , _FullWTL );
 
-    float3 force = 0;
+    p.nor = normalize( mul(_Transform, float4( -v.nor ,0 ) ).xyz);
 
+   
 
-
+   // float scale = length(mul(_Transform , float4(1,0,0,0) ).xyz);
 
 
+    
+float3 force = 0;
+
+
+    float4x4 fTerr = mul( _FullWTL,_Terrarium );
     //force += HumanForces( p.pos );
-    float3 terrarium = mul( _Terrarium , float4( p.pos,1)).xyz;
-    float m = sdBox( mul( _Terrarium , float4( p.pos,1)).xyz , float3(.35,.35,.35));
+    float3 terrarium = mul(_Terrarium , float4( p.pos ,1)).xyz;
+    float m = sdBox( mul( _Terrarium , float4( p.pos ,1)).xyz , float3(.35,.35,.35));
+    float3 tNor = normalize(terrarium);
 
+    
+    m = m/_FullScale;
+    tNor = normalize(mul(_FullWTL,tNor));
 
 
   float3 eps = float3(.001 , 0, 0);
 
-  float3 nor2 = float3(
-      sdBox( mul( _Terrarium , float4( p.pos + eps.xyy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.xyy ,1)).xyz , float3(.4,.4,.4)),
-      sdBox( mul( _Terrarium , float4( p.pos + eps.yxy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yxy ,1)).xyz , float3(.4,.4,.4)),
-      sdBox( mul( _Terrarium , float4( p.pos + eps.yyx ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yyx ,1)).xyz , float3(.4,.4,.4))
-    );
-
-  if( m > 0 ){ force -= .1*m *normalize(terrarium);}//*nor2; }
+    if( m > 0 ){ force -= 1.4*m*m*m *tNor;}//*nor2; }
+    //if( m > .15 ){ fPos = fPos * (m-.15) * normalize(terrarium) * .01; p.vel *= .5; }//*nor2; }
 
     float velMatch = (1-dot( p.nor , normalize(_Velocity) ));
 
     p.og = v.pos;
 
-    targetPos = mul(_Transform , float4( v.pos   , 1 ) ).xyz;
+    float3 targetPos = mul(_FullWTL , mul(_Transform, float4( v.pos , 1 ) )).xyz;
 
-  if( length(_Velocity ) > 0 ){
-   targetPos += 10*_Velocity * -dot( p.nor , normalize(_Velocity) ) * length( _Velocity);
-  // targetPos += 10*p.nor*clamp( dot( p.nor , normalize(_Velocity) ),0,1) * length(_Velocity);
-}
-    force -= (p.pos - targetPos) * .02;// * velMatch;
-    force += curlNoise( p.pos * 4.1 + _Time * .2 ) * .001;
+    force -= (fPos - targetPos)* _ReturnStrength;// * velMatch;
+    force += curlNoise( (fPos * _CurlSize+ _Time*_CurlSpeed)  ) * _CurlStrength;
 
 
     //force += HumanForces(p.pos) * 20;
  
     float dist = map( p.pos );
-    float3 nor = getNor( p.pos ); 
-    if( dist < 0 ){ p.pos = p.pos - dist * nor * .01; p.vel *= .5; force -= dist * nor;}
-    //if( dist < .1 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
+    float3 nor = getNor( p.pos );
 
+    nor = normalize(mul(_FullWTL , float4(nor,0)).xyz); 
+    dist = dist/_FullScale;//100*length(mul(_FullWTL , float4(dist,0,0,0)).xyz); 
+
+    if( dist < 0 ){fPos = fPos - dist*nor *.11;  p.vel *= .5; force -= dist * nor;}
    
     if( length(force) > 10 ){ force = normalize(force) * 10; }
     if( length(p.vel) > 10 ){ p.vel = normalize(p.vel) * 10; }
 
 
-    p.vel += force * .1;
-    p.pos += p.vel;
-    p.vel *= .9;
-    p.debug = length( p.pos - targetPos);
+    p.vel += force;
+    fPos += p.vel;
 
 
+    p.vel *= _Dampening;
+    p.debug = length( fPos - targetPos);
+
+    //fPos = targetPos;
 
     p.uv = v.uv;
 
-    //p.pos = mul(_Transform , float4( v.pos ,1 ) ).xyz;
+    //p.pos = mul(_FullLTW , mul(_FullWTL,mul(_Transform, float4( v.pos ,1 )) )).xyz;
+    p.pos = mul(_FullLTW, float4( fPos ,1 )).xyz;
 
     //p.debug = length(inLine);
     //p.pos = targetPos;
@@ -300,7 +316,7 @@ void TriLocation (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 }
 
 
-
+float _ResolveReduceAmount;
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
 void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
@@ -319,8 +335,23 @@ void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
       if( length( p.pos-p.resolver.xyz) != 0 ){
-        p.vel -= clamp( pow( length(p.pos - p.resolver.xyz) , 2 )* 100 , -.3 , .3)* 1 * normalize(p.pos-p.resolver.xyz);//
+
+        float3 fPos = mul(_FullWTL,float4((p.pos - p.resolver),0)).xyz;
+
+        float3 fP2 = mul(_FullWTL,float4((p.pos),1)).xyz;
+        //p.vel -= clamp( pow( length(fPos) , 2 )* 100 , -.3 , .3)* 1 * normalize(fPos);
+        //if( length(fPos) > 0.0001 ){ p.vel *= clamp( .01 / length(fPos) , .1 , .99); }
+       // fP2 += p.vel*.9;
+
+        p.pos = lerp( p.pos, p.resolver, .4 );//mul(_FullLTW,float4(p.resolver,1)).xyz;
+
+
+      float3 targetPos = mul(_Transform, float4( p.og, 1 ) );
+       p.pos = lerp( p.pos, targetPos , clamp(  length(p.pos-p.resolver)*2 , 0 , 1 ));
       }
+
+
+      // Getting our smoothed normal
 
       float3 nor = float3(0,1,0);
       for( int i = 0; i < 16; i++ ){
@@ -328,14 +359,14 @@ void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
         float3 connection = p.connections[i];
 
-        if( connection.z > .0000000000 ){
+        if( connection.z > .000 ){
           int id1 = (int)connection.x;
           int id2 = (int)connection.y;
           Particle p1 = _ParticleBuffer[safeID(id1,_ParticleBuffer_COUNT)];
           Particle p2 = _ParticleBuffer[safeID(id2,_ParticleBuffer_COUNT)];
 
 
-          nor += normalize(cross( p.pos*1000 - p1.pos * 1000 , p.pos*1000 - p2.pos * 1000 ));
+          nor += normalize(cross( p.pos*10 - p1.pos * 10 , p.pos*10 - p2.pos * 10 ));
 
         }
 

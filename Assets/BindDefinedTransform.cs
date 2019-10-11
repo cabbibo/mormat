@@ -6,16 +6,17 @@ public class BindDefinedTransform : Binder
 { 
     public string transformName;
     public Transform transformToBind;
-    public Matrix4x4 transformMatrix;
+
+    public bool bindInverse;
+    public string inverseName;
+
+    public bool bindScale;
+    public string scaleName;
     public override void Bind(){
       toBind.BindMatrix( transformName, () => transformToBind.worldToLocalMatrix );
+      if( bindInverse ){toBind.BindMatrix( inverseName, () => transformToBind.localToWorldMatrix );}
+      if( bindScale ){toBind.BindFloat( scaleName, () => transformToBind.lossyScale.x );}
     }
-
-
-    /*public override void WhileLiving( float v){
-//      print(transform.localToWorldMatrix[0]);
-      transformMatrix = transform.localToWorldMatrix;
-    }*/
 
 
   }

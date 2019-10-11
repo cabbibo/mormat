@@ -125,7 +125,7 @@ float3 Others(int pID , float3 pos,float3 vel ){
 
 
       if( length(dif) < .5 ){
-       totalForce -= normalize(dif) * 1.03 / length(dif);
+       totalForce -= 100*normalize(dif) * 1.03 / length(dif);
       }
 
       if( length(dif) < .16 ){

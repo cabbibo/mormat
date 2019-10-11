@@ -19,6 +19,7 @@ public class Data : Cycle
 
 
   public Transform camera;
+  public float SERVER_TIME;
   public HumanBuffer humans;
 
   public override void Create(){
@@ -55,9 +56,7 @@ public class Data : Cycle
   }
 
   public override void WhileLiving( float v ){
-
-
-
+    SERVER_TIME = Time.time;
   }
 
 }
