@@ -189,15 +189,20 @@ float3 force = 0;
     float3 terrarium = mul(_Terrarium , float4( p.pos ,1)).xyz;
     float m = sdBox( mul( _Terrarium , float4( p.pos ,1)).xyz , float3(.35,.35,.35));
     float3 tNor = normalize(terrarium);
-
+ 
+  float3 eps = float3(.001 , 0, 0);
+    float3 nor2 = float3(
+      sdBox( mul( _Terrarium , float4( p.pos + eps.xyy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.xyy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( p.pos + eps.yxy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yxy ,1)).xyz , float3(.4,.4,.4)),
+      sdBox( mul( _Terrarium , float4( p.pos + eps.yyx ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( p.pos- eps.yyx ,1)).xyz , float3(.4,.4,.4))
+    );
     
     m = m/_FullScale;
-    tNor = normalize(mul(_FullWTL,tNor));
+    tNor = normalize(mul(_FullWTL,nor2));
 
 
-  float3 eps = float3(.001 , 0, 0);
 
-    if( m > 0 ){ force -= 1.4*m*m*m *tNor;}//*nor2; }
+    if( m > 0 ){ force -= .4*m*tNor;}//*nor2; }
     //if( m > .15 ){ fPos = fPos * (m-.15) * normalize(terrarium) * .01; p.vel *= .5; }//*nor2; }
 
     float velMatch = (1-dot( p.nor , normalize(_Velocity) ));
@@ -347,7 +352,7 @@ void Resolve (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
       float3 targetPos = mul(_Transform, float4( p.og, 1 ) );
-       p.pos = lerp( p.pos, targetPos , clamp(  length(p.pos-p.resolver)*2 , 0 , 1 ));
+       //p.pos = lerp( p.pos, targetPos , clamp(  length(p.pos-p.resolver)*2 , 0 , 1 ));
       }
 
 

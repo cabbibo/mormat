@@ -24,6 +24,9 @@ int _ParticlesPerTrail;
 
 
 float4x4 _Transform;
+float4x4 _FullWTL;
+float4x4 _FullLTW;
+float _FullScale;
 
 
 int _VertBuffer_COUNT;
@@ -106,19 +109,29 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     
     float3 force = 0;
 
-    force += -(vert.pos - targetVert.pos) * .04;
+    float3 fPos = mul(_FullWTL,float4(vert.pos,1)).xyz;
+    float3 fTPos = mul(_FullWTL,float4(targetVert.pos,1)).xyz;
+
+    force += -(fPos - fTPos) * .04;
 
 
     float dist = map( vert.pos );
     float3 nor = getNor( vert.pos ); 
+
+
+    nor = normalize(mul(_FullWTL , float4(nor,0)).xyz); 
+    dist = dist/_FullScale;
+
     if( dist < 0 ){ force += nor  * .001; }
     
     vert.vel += force;
-    vert.pos += vert.vel;
+    fPos += vert.vel;
 
 
-    vert.vel *= .4;//* minDist;
+    vert.vel *= .7;//* minDist;
     vert.life = head.life;
+  
+    vert.pos = mul(_FullLTW,float4(fPos,1)).xyz;
   }
   
  // vert.nor = mul(rotation(vert.axis,vert.life*20*(hash(float(pID*123)))+hash(float(pID * 23))),float4(0,0,1,0)).xyz;

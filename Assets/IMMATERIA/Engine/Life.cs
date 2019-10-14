@@ -266,7 +266,7 @@ public class Life : Cycle {
         if( debug == true ){ print("Bound Form : " + form.gameObject );}
       }else{
         allBuffersSet = false;
-        print("YOUR BUFFER : " + name +  " IS NULL!");
+        DebugThis("YOUR BUFFER : " + name +  " IS NULL!");
       }
     }else{
  //     print("WAHT YR FORM IS NULL");

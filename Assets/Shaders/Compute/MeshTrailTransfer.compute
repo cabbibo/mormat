@@ -35,6 +35,9 @@ float3 _CameraForward;
 float3 _CameraRight;
 float3 _CameraUp;
 
+
+float _FullScale;
+
 #include "../Chunks/cubicCurve.cginc"
 #include "../Chunks/safeID.cginc"
 #include "../Chunks/hash.cginc"
@@ -166,10 +169,14 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
 
 
+
+
     //val = baseVert.pos.y / _ModelLength;
     Vert head  = _SkeletonBuffer[ safeID(trailID * _NumVertsPerTrail, _SkeletonBuffer_COUNT) ];
     Vert tip  = _SkeletonBuffer[ safeID(trailID * _NumVertsPerTrail + _NumVertsPerTrail-1, _SkeletonBuffer_COUNT) ];
-    
+  
+
+    val *= clamp(head.debug.y,.0001,1);  
    // float rowVal = float(row) / float(_RibbonLength);
    // float colVal =  (float(col)/float(2)) ;
 
@@ -203,20 +210,21 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
  
 
 
+  float3 fRadius = _Radius * _FullScale * clamp( head.debug.y,0,1);
    // will be bugggyyy
     if( _Direction == 0 ){
-      pos += baseVert.pos.y * tang * _Radius;
-      pos += baseVert.pos.z * nor* _Radius; 
+      pos += baseVert.pos.y * tang * fRadius;
+      pos += baseVert.pos.z * nor* fRadius; 
     }else if( _Direction == 1 ){
-     // pos += mul(rotMat,float3(baseVert.pos.y , 0 , baseVert.pos.)) * _Radius;//baseVert.pos.x * tang * _Radius;
-      //pos += baseVert.pos.z * nor* _Radius; 
+     // pos += mul(rotMat,float3(baseVert.pos.y , 0 , baseVert.pos.)) * fRadius;//baseVert.pos.x * tang * fRadius;
+      //pos += baseVert.pos.z * nor* fRadius; 
 
-      pos += baseVert.pos.z  * normalize(nor) * _Radius;
-      pos += baseVert.pos.x  * tang * _Radius;
-      //pos += baseVert.pos.y * xDir * _Radius;
+      pos += baseVert.pos.z  * normalize(nor) * fRadius;
+      pos += baseVert.pos.x  * tang * fRadius;
+      //pos += baseVert.pos.y * xDir * fRadius;
     }else{
-      pos += baseVert.pos.x * tang * _Radius;
-      pos += baseVert.pos.y * nor* _Radius; 
+      pos += baseVert.pos.x * tang * fRadius;
+      pos += baseVert.pos.y * nor* fRadius; 
     }
 
     //pos += normalize(nor) * ((float(pID)%2)-.5) * _Radius;// * _Radius;
@@ -267,6 +275,8 @@ void PerTrailTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_Group
 
     //val = baseVert.pos.y / _ModelLength;
     Vert trailParticle  = _SkeletonBuffer[ safeID(inTrailID + _NumVertsPerTrail * trailID, _SkeletonBuffer_COUNT) ];
+    Vert tip  = _SkeletonBuffer[ safeID(_NumVertsPerTrail * trailID , _SkeletonBuffer_COUNT) ];
+    Vert head  = _SkeletonBuffer[ safeID(_NumVertsPerTrail * trailID +(_NumVertsPerTrail-1), _SkeletonBuffer_COUNT) ];
     
     float3 pos = trailParticle.pos;
 
@@ -280,7 +290,7 @@ void PerTrailTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_Group
     float3 c3 = float3( xDir.z , yDir.z , zDir.z );
 
     float3x3 rotMat = float3x3(c1,c2,c3);
-    pos +=mul(rotMat,baseVert.pos) * _Radius * min(val*4, 1-val); 
+    pos +=mul(rotMat,baseVert.pos) * _Radius * _FullScale  * min(val*4, 1-val); 
 
     float2 fUV =baseVert.uv;
         //if( baseParticle.debug.x < 1 ){ fPos  = 0;}

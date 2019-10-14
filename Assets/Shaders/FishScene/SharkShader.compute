@@ -32,10 +32,28 @@ int _HumanBuffer_COUNT;
 RWStructuredBuffer<Vert> _VertBuffer;
 RWStructuredBuffer<Vert> _FishBuffer;
 RWStructuredBuffer<Transform> _TransformBuffer;
+RWStructuredBuffer<Transform> _TransformFollowBuffer;
 
 float4x4 _Transform;
 float4x4 _Terrarium;
 float4x4 _SpacePup;
+
+float4x4 _FullWTL;
+float4x4 _FullLTW;
+float _FullScale;
+
+float _CurlSize;
+float _CurlSpeed;
+float _CurlForce;
+float _FlowSpeed;
+float _FollowForce;
+float _Dampening;
+
+float _SpacePupRadius;
+float _SpacePupForce;
+
+float _HumanDist;
+float _HumanForce;
 
 
 int _VertBuffer_COUNT;
@@ -106,54 +124,6 @@ float3 HumanForces(float3 p){
   return totalForce * .001;
 }
 
-float3 Others(int pID , float3 pos,float3 vel ){
-
-  float3 totalForce = float3(0,0,0);
-
-
-  for( int i=0; i <_VertBuffer_COUNT; i++ ){
-
-    Vert oVert = _VertBuffer[i];
-    if( i != pID ){
-
-      float3 dif = float3(oVert.pos - pos);
-
-      if( length(dif) > 0 ){
-
-      //float3 c = cross(normalize(vel), normalize(oVert.vel));
-      //float3 t = normalize(cross(normalize(c),normalize(vel)));
-
-
-      if( length(dif) < .5 ){
-       totalForce -= 100*normalize(dif) * 1.03 / length(dif);
-      }
-
-      if( length(dif) < .16 ){
-
-        if(length(oVert.vel) > 0 ){
-          totalForce += normalize(oVert.vel) * .01 / length(dif);
-        }
-      }// * pow( (length(dif)-.1) , 3);
-
-        if( length(dif) < 3.4 ){
-          totalForce += normalize(dif) * .001 *clamp( length(dif-0) ,0,2);// * length(dif);// / (length(dif)-.1);
- 
-        }
-
-      // totalForce += normalize(dif) * .0004;// * length(dif);// / (length(dif)-.1);
- 
-
-      }
-
-
-
-    //  totalForce -= dif;
-    }
-  }
-
-  return totalForce * .01;
-
-}
 
 float _Time;
 
@@ -167,7 +137,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   Vert vert = _VertBuffer[pID];
 
   float scale = mul( _Transform,float4(0,1,0,0)).y;
-  float3 fPos = vert.pos;
+  float3 fPos = mul( _FullWTL,float4(vert.pos,1)).xyz;
 
   if( vert.life <= .4 ){
     fPos = mul( _Transform,float4(0,0,0,1)).xyz;
@@ -185,68 +155,32 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     float3 dir = normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .1;
     vert.vel = 0;// (v * 1 + dir) * .001;
     vert.life = hash(float(pID)) * .5 + .5;
+    vert.pos = fPos;
+
+
   }else{
+    
     float3 force = 0;
 
-    //force += normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .0003;
-    force += curlNoise( fPos * 1 + _Time * .1) * .0001;
 
-    //force += HumanForces( fPos );
-    float3 terrarium = mul( _Terrarium , float4( fPos,1)).xyz;
-    float m = -sdBox( mul( _Terrarium , float4( fPos,1)).xyz , float3(.4,.4,.4));
+    float3 worldPos = mul(_TransformFollowBuffer[pID].localToWorld, float4(0,0,0,1)).xyz;
+     force += _FollowForce * (mul(_FullWTL,float4(worldPos,1)) - fPos);
 
 
-
-  float3 eps = float3(.001 , 0, 0);
-
-  float3 nor2 = float3(
-      sdBox( mul( _Terrarium , float4( fPos + eps.xyy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( fPos- eps.xyy ,1)).xyz , float3(.4,.4,.4)),
-      sdBox( mul( _Terrarium , float4( fPos + eps.yxy ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( fPos- eps.yxy ,1)).xyz , float3(.4,.4,.4)),
-      sdBox( mul( _Terrarium , float4( fPos + eps.yyx ,1)).xyz , float3(.4,.4,.4)) - sdBox( mul( _Terrarium , float4( fPos- eps.yyx ,1)).xyz , float3(.4,.4,.4))
-    );
-
-
-  for(int i = 0; i < _FishBuffer_COUNT; i++ ){
-    Vert spooky = _FishBuffer[safeID(i,_FishBuffer_COUNT)];
-
-    if( length(spooky.pos - vert.pos) < .5 ){ force += normalize(spooky.pos - vert.pos); }
-  }
-
-//fPos = terrarium;
-    if( m < 0 ){ force += 100*m *nor2; }
-
-
-    float3 m2 =  mul( _SpacePup , float4( fPos,1)).xyz;
-
-
-if( length(m2) > 0 && length(m2) < 2){
-    force += 4 * normalize(m2) * (length(m2)-2);
-}
-
-
-    force += .1*Others( pID , fPos , vert.vel );
-
-   force += .00006 * (mul(_Transform , float4(0,0,0,1)).xyz - fPos);
-    float dist = map( fPos );
-    float3 nor = getNor( fPos ); 
-    if( dist < 0 ){ force += nor  * 10.1 * -(dist); }
-    if( dist < .1 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
-    //force -=  dist * cross( nor ,float3(0,1,0)) * .004 + dist * nor * .004;
-    
-    if( length(force)> 1 ){ force = normalize(force) * 1;}
-    if( length(vert.vel)> 1 ){ vert.vel = normalize(vert.vel) * 1;}
+     force += curlNoise( fPos * _CurlSize + _Time * _CurlSpeed) * _CurlForce;
     vert.vel += force * .9;
 
-    vert.vel = normalize( vert.vel) * .005;
+    vert.vel = normalize( vert.vel) * _FlowSpeed;
     fPos += vert.vel;
 
 
-    vert.vel *= .9;//* minDist;
+    vert.vel *= _Dampening;//* minDist;
     //vert.life -= .0003;
+  vert.pos = mul(_FullLTW,float4(fPos,1));
   }
   
  // vert.nor = mul(rotation(vert.axis,vert.life*20*(hash(float(pID*123)))+hash(float(pID * 23))),float4(0,0,1,0)).xyz;
-  vert.pos =fPos;
+  
   _VertBuffer[pID] = vert;
 
 }

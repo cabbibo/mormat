@@ -252,7 +252,9 @@ void Basis (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   float3 dir = t0;
   float3 tangent0 = -normalize( cross(t0 ,_CameraUp));
 
-  //if( dot( t0 , _CameraForward ) < 0 ){ tangent0 *= -1;}
+  dir = normalize(cross( t0 , _CameraUp ));
+
+  //if( dot( t0 , _CameraUp ) < 0 ){ tangent0 *= -1; }
 
   //v0 = normalize( cross(v0 , t0));
   //setV(v0,0,hID);
@@ -265,7 +267,7 @@ void Basis (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   Vert v1 = _VertBuffer[sID1];
   //v1.pos = v1.pos + tangent0 * r;//_Radius;
   v1.tangent = tangent0;
-  v1.nor = normalize(cross( tangent0 , dir ));
+  v1.nor = dir;
   _VertBuffer[sID1] = v1; 
 
 
