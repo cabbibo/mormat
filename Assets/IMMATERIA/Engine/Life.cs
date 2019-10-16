@@ -246,6 +246,7 @@ public class Life : Cycle {
   public virtual void _SetInternal(){    
     shader.SetFloat("_Time", Time.time);
     shader.SetFloat("_Delta", Time.deltaTime);
+    shader.SetFloat("_DT", Time.deltaTime);
   }
 
 

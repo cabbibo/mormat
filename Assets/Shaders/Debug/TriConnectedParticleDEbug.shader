@@ -23,16 +23,16 @@
 
       #include "UnityCG.cginc"
 
-    struct Vert{
-      float3 pos;
-      float3 vel;
-      float3 nor;
-      float3 tan;
-      float2 uv;
-      float2 offset;
-      float4 debug;
-      float2 connections[16];
-    };
+struct Vert{
+  float3 pos;
+  float3 vel;
+  float3 nor;
+  float3 og;
+  float2 uv;
+  float2 debug;
+  float4 resolver;
+  float3 connections[16];
+};
       #include "../Chunks/debugVSChunk.cginc"
 
 

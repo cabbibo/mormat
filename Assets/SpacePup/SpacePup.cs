@@ -100,16 +100,6 @@ public class SpacePup : Cycle
    [Range(0.1f, .9f)]
   public float _ResolveReduceAmount;
 
-    // amount the people move the gooey mesh 
-  // as they pass by. - = pull , + = push
-  [Range(-.01f, .01f)]
-  public float _HumanDisplacementForce;
-
-
-  // how far away people needs to be to displace
-  [Range(0.01f, 2.99f)]
-  public float _HumanDisplacementRadius;
-
 
 
 
@@ -156,8 +146,6 @@ public class SpacePup : Cycle
 
     life.BindForm("_TransformBuffer", transformBuffer);
 
-    life.BindFloat("_HumanDisplacementForce", () => _HumanDisplacementForce );
-    life.BindFloat("_HumanDisplacementRadius", () => _HumanDisplacementRadius );
     life.BindFloat("_CurlStrength", () => _CurlStrength );
     life.BindFloat("_CurlSize", () => _CurlSize );
     life.BindFloat("_CurlSpeed", () => _CurlSpeed );

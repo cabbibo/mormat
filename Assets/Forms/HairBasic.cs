@@ -17,6 +17,7 @@ public class HairBasic : LifeForm {
 
   public float[] transformArray;
 
+public int numFrames;
   public override void Create(){
 
     transformArray = new float[16];
@@ -33,6 +34,7 @@ public class HairBasic : LifeForm {
     SafePrepend( Hair );
 
     //Cycles.Insert( 4 , Base );
+    numFrames= 0;
 
 
   }
@@ -69,16 +71,12 @@ public class HairBasic : LifeForm {
   }
 
 
-  public override void OnBirth(){
-    set.active = true;
-  }
-
-  public override void Activate(){
-    set.active = true;
-  }
 
   public override void WhileLiving(float v){
-    
+
+  numFrames += 1;
+
+  if( numFrames == 10 ){ Set(); Activate(); }    
     //set.active = false;
     transformArray = HELP.GetMatrixFloats( transform.localToWorldMatrix );
   }

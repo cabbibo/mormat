@@ -15,20 +15,6 @@ struct Transform {
   float4x4 worldToLocal;
 };
 
-
-struct Human {
-  float4x4 leftHand;
-  float4x4 rightHand;
-  float4x4 head;
-  float leftTrigger;
-  float rightTrigger;
-  float voice;
-  float debug;
-};
-
-RWStructuredBuffer<Human> _HumanBuffer;
-int _HumanBuffer_COUNT;
-
 RWStructuredBuffer<Vert> _VertBuffer;
 RWStructuredBuffer<Vert> _SpookyBuffer;
 RWStructuredBuffer<Transform> _TransformBuffer;
@@ -53,9 +39,6 @@ float _AlignForce;
 float _AttractDist;
 float _AttractForce;
 
-float _HumanDist;
-float _HumanForce;
-
 float _SpookyDist;
 float _SpookyForce;
 float _CenteringForce;
@@ -74,6 +57,10 @@ int _SpookyBuffer_COUNT;
 #include "../Chunks/snoise.cginc"
 #include "../Chunks/hash.cginc"
 #include "../Chunks/curlNoise.cginc"
+#include "../Chunks/humanForces.cginc"
+
+
+
 float sdBox( float3 p, float3 b )
 {
   float3 d = abs(p) - b;
@@ -105,35 +92,6 @@ float3 getNor( float3 pos ){
   return normalize( nor  * 1000 );
 }
 
-
-float3 HumanForces(float3 p){
-  float3 totalForce;
-  
-  for( int i = 0; i < _HumanBuffer_COUNT; i++ ){
-    Human h = _HumanBuffer[i];
-
-    float3 hL = mul(h.leftHand,float4(0,0,0,1));
-    float3 hR = mul(h.rightHand,float4(0,0,0,1));
-    float3 hH = mul(h.head,float4(0,0,0,1));
-
-    float3 d;
-
-    d = p - hL;
-
-    if( length( d ) < _HumanDist && length( d ) > .001 ){ 
-      totalForce += normalize( d ) / length(d);
-    }
-
-
-     d = p - hR;
-    if( length( d ) < _HumanDist && length( d ) > .001 ){ 
-      totalForce += normalize( d ) / length(d);
-    }
-
-  }
-
-  return totalForce * _HumanForce;
-}
 
 float3 Others(int pID , float3 pos,float3 vel ){
 
@@ -185,6 +143,7 @@ float3 Others(int pID , float3 pos,float3 vel ){
 }
 
 float _Time;
+float _DT;
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -221,7 +180,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     //force += normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .0003;
     force += curlNoise( fPos * _CurlSize + _Time * _CurlSpeed) * _CurlForce;
 
-    //force += HumanForces( fPos );
+    force += HumanForces( vert.pos );
     float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
     float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.5,.5,.5));
 
@@ -291,7 +250,7 @@ if( dist < .1 ){ force -= cross( nor ,float3(0,1,0)) * .001 / (1 + 1 * dist); }
     vert.vel = normalize( vert.vel) * _FlowSpeed;
     
 
-    fPos += vert.vel;
+    fPos += vert.vel * _DT*60;
 
 
 

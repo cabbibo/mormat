@@ -32,6 +32,12 @@ int _BaseBuffer_COUNT;
 
 int _VertsPerMesh;
 
+float _DT;
+
+
+float4x4 _FullWTL;
+float4x4 _FullLTW;
+float    _FullScale;
 
 #include "../Chunks/safeID.cginc"
 
@@ -63,6 +69,8 @@ float _Dampening;
 float _ReturnStrength;
 float _SharkDisplacementForce;
 float _SharkDisplacementRadius;
+
+#include "../Chunks/humanForces.cginc"
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -104,9 +112,11 @@ void Gooey (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
       
     }
 
+    force += mul(_FullLTW, float4(HumanForces(v.pos),0) ).xyz; 
+
 
     v.vel += force;
-    v.pos  += v.vel;
+    v.pos  += v.vel * ( _DT * 60);
     v.vel *= _Dampening;
 
     //v.pos = tPos;

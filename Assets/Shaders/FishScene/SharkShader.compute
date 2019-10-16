@@ -126,6 +126,7 @@ float3 HumanForces(float3 p){
 
 
 float _Time;
+float _DT;
 
 #define NR_THREADS 128
 [numthreads(NR_THREADS,1,1)]
@@ -167,16 +168,22 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
      force += _FollowForce * (mul(_FullWTL,float4(worldPos,1)) - fPos);
 
 
+
+
      force += curlNoise( fPos * _CurlSize + _Time * _CurlSpeed) * _CurlForce;
     vert.vel += force * .9;
 
     vert.vel = normalize( vert.vel) * _FlowSpeed;
-    fPos += vert.vel;
+    fPos += vert.vel * _DT * 60;
 
 
     vert.vel *= _Dampening;//* minDist;
     //vert.life -= .0003;
   vert.pos = mul(_FullLTW,float4(fPos,1));
+
+       if( length(vert.pos - worldPos) > 2){
+      vert.pos = worldPos;
+     }
   }
   
  // vert.nor = mul(rotation(vert.axis,vert.life*20*(hash(float(pID*123)))+hash(float(pID * 23))),float4(0,0,1,0)).xyz;
