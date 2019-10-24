@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class Helper : Cycle
 {
 
@@ -18,4 +19,5 @@ public class Helper : Cycle
     print("GOOD JOB U ONLOCKTIOD!");  
   }
 
+}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TrailParticles : Particles
 {
 
@@ -9,4 +10,5 @@ public class TrailParticles : Particles
   public int particlesPerTrail;
 
   public override void SetCount(){ count = head.count * particlesPerTrail; }
+}
 }

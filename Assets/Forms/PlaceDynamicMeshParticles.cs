@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class PlaceDynamicMeshParticles : Simulation
 {
   public Form meshVerts;
@@ -11,4 +12,5 @@ public class PlaceDynamicMeshParticles : Simulation
     life.BindForm("_VertBuffer" , meshVerts );
 
   }
+}
 }

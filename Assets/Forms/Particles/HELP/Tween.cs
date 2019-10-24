@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class Tween : Cycle
 {
    
@@ -85,4 +86,5 @@ public class Tween : Cycle
   public void TestEndFunction(){ print("TADAAAA"); }
 
 
+}
 }

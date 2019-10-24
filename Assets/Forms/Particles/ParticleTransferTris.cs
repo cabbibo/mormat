@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class ParticleTransferTris : IndexForm {
 
   public override void SetCount(){
@@ -31,3 +32,4 @@ public class ParticleTransferTris : IndexForm {
 
 }
 
+}

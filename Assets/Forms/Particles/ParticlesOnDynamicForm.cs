@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+namespace IMMATERIA {
 public class ParticlesOnDynamicForm: Particles {
   
   public Form verts;
@@ -186,5 +183,7 @@ public class ParticlesOnDynamicForm: Particles {
     life.YOLO();
   }
 
+
+}
 
 }

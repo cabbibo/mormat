@@ -6,11 +6,10 @@
        _TextureMap ("TextureMap", 2D) = "white" {}
        _NormalMap ("NormalMap", 2D) = "white" {}
        _ShinyMap ("ShinyMap", 2D) = "white" {}
-       _PLightMap1 ("PLightMap1", 2D) = "white" {}
-       _PLightMap2 ("PLightMap2", 2D) = "white" {}
-       _PLightMap3 ("PLightMap3", 2D) = "white" {}
-       _PLightMap4 ("PLightMap4", 2D) = "white" {}
+        _PLightMap("Painterly Light Map", 2D) = "white" {}
+      
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
+    _BaseColor( "BaseColor" , float )  = 0
     
     }
 
@@ -23,6 +22,7 @@
         Pass
         {
 
+Tags{ "LightMode" = "ForwardBase" }
           Stencil
 {
 Ref 7
@@ -58,6 +58,7 @@ LIGHTING_COORDS(5,6)
 
             };
             float4 _Color;
+            float _BaseColor;
 
             StructuredBuffer<Vert> _VertBuffer;
             StructuredBuffer<int> _TriBuffer;
@@ -68,10 +69,7 @@ LIGHTING_COORDS(5,6)
             sampler2D _ShinyMap;
             sampler2D _NormalMap;
 
-            sampler2D _PLightMap1;
-            sampler2D _PLightMap2;
-            sampler2D _PLightMap3;
-            sampler2D _PLightMap4;
+            sampler2D _PLightMap;
             samplerCUBE _CubeMap;
 
             v2f vert ( uint vid : SV_VertexID )
@@ -98,12 +96,11 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
 
             fixed4 frag (v2f v) : SV_Target
             {
-float4 p1 = tex2D( _PLightMap1 , v.uv * 3 );
-float4 p2 = tex2D( _PLightMap2 , v.uv * 3 );
-float4 p3 = tex2D( _PLightMap3 , v.uv * 3 );
-float4 p4 = tex2D( _PLightMap4 , v.uv * 3 );
 
+
+             
   float3 fNor = normalize(v.nor);
+                //float m = 1-dot(_WorldSpaceLightPos0.xyz , fNor);
                 float m = 1-dot(_WorldSpaceLightPos0.xyz , fNor);
 
              
@@ -133,34 +130,45 @@ float atten = LIGHT_ATTENUATION(v);
                 //m = saturate( 1-m );
 
 //                m = (-m* atten);
+ float4 p = tex2D( _PLightMap , v.uv * 3 );
+                m = 1-((1-m)*atten);
+                m *= 3;
 
-                m = 3 * (m*(1-atten));
+                float4 fLCol = float4(1,0,0,0);
 
 
-                float fLM =  m;
-
-
-                float4 fLCol = float4(1,0,0,1);
-                if( fLM < 1 ){
-                    fLCol = lerp( p1 , p2 , fLM );
-                }else if( fLM >= 1 && fLM < 2){
-                    fLCol = lerp( p2 , p3 , fLM-1 );
-                }else if( fLM >= 2 && fLM < 3){
-                    fLCol = lerp( p3 , p4 , fLM-2 );
+                float4 weights = 0;
+                if( m < 1 ){
+                   weights = float4(1-m , m , 0, 0);//lerp( p.x , p.y , m );
+                }else if( m >= 1 && m < 2){
+                    weights = float4(0,1-(m-1) , (m-1) ,  0);
+                }else if( m >= 2 && m < 3){
+                    weights = float4(0,0,1-(m-2) , (m-2) );
                 }else{
-                    fLCol = p4;
+                  weights = float4(0,0,0 , 1);
                 }
 
-                // sample the texture
-float4 s2 = tex2D( _ColorMap , float2(m* .04+.5, 0) );
-float4 s3 = tex2D( _TextureMap , v.uv * .3 );
 
+
+                fLCol = p.x * weights.x;
+                fLCol += p.y * weights.y;
+                fLCol += p.z * weights.z;
+                fLCol += p.w * weights.w;
+                fLCol = 1-fLCol;
+               //a fLCol = pow(fLCol,.5);// * fLCol * fLCol * 3;
+
+                // sample the texture
 
 float3 shiny = tex2D(_ShinyMap,v.uv);
+float4 s3 = tex2D( _TextureMap , v.uv  );
+float4 s2 = tex2D( _ColorMap , float2(-m* .2  +_BaseColor -((s3.x) * .3) , 0) );
 
- float3 fCol= lerp(s3, length(tCol) * s2, shiny.x) * fLCol;
+
+ float3 fCol=  (fLCol * 1.2 + .1) * pow(length(tCol),2) * 1 * s2 * (((1-m) * atten)* .7 +.6);//lerp(s2, length(tCol) * s2, shiny.x);
                // float3 fCol= fLCol*s2;//v.nor * .5 + .5;
-                fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
+                
+              //fCol = s3* (fLCol * .7 + .3);;
+                fixed4 col =float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
             }
 
@@ -283,7 +291,7 @@ Pass replace
 
         
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * .005;
+                float3 fPos = v.pos + v.nor * .01;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 

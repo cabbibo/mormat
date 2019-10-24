@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TubeVerts: Form {
 
   public Hair hair;
@@ -17,7 +18,7 @@ public class TubeVerts: Form {
   }
 
 }
-
+}
 
 
 

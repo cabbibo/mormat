@@ -7,13 +7,7 @@
     _ColorMap ("Color Map", 2D) = "white" {}
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
 
-
-       _PLightMap1 ("PLightMap1", 2D) = "white" {}
-       _PLightMap2 ("PLightMap2", 2D) = "white" {}
-       _PLightMap3 ("PLightMap3", 2D) = "white" {}
-       _PLightMap4 ("PLightMap4", 2D) = "white" {}
-       _PLightMap5 ("PLightMap5", 2D) = "white" {}
-
+        _PLightMap("Painterly Light Map", 2D) = "white" {}
     _HueStart ("HueStart", Float) = 0
 
   }
@@ -55,11 +49,7 @@ ZFail keep
             sampler2D _ColorMap;
       samplerCUBE _CubeMap;
 
-            sampler2D _PLightMap1;
-            sampler2D _PLightMap2;
-            sampler2D _PLightMap3;
-            sampler2D _PLightMap4;
-            sampler2D _PLightMap5;
+            sampler2D _PLightMap;
 
             float _HueStart;
 
@@ -106,7 +96,7 @@ ZFail keep
             fixed4 frag (v2f v) : SV_Target
             {
                 // sample the texture
-                fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
+                fixed atten= UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
                 float val = -dot(normalize(_WorldSpaceLightPos0.xyz),normalize(v.nor));// -DoShadowDiscard( i.worldPos , i.uv , i.nor );
 
                 float lookupVal =  max(min( v.uv.y * 2,( 1- v.uv.y ) ) * 1.5,0);//2 * tex2D(_MainTex,v.uv * float2(4 * saturate(min( v.uv.y * 4,( 1- v.uv.y ) )) ,.8) + float2(0,.2));
@@ -114,50 +104,47 @@ ZFail keep
                 float3 refl = reflect( normalize(_WorldSpaceCameraPos-v.worldPos) , v.nor);
                 float reflM = dot( refl , _WorldSpaceLightPos0 );
 
-                float4 tCol = tex2D(_MainTex, v.uv * float2( 4  ,1 ) ) * 3;
+              //  float4 tCol = tex2D(_MainTex, v.uv * float2( 4  ,1 ) ) * 3;
                 float4 cutOff = tex2D(_MainTex,  v.uv * float2( 3 , 1  ) ) * v.uv.x * 2;
                 //if( length(cutOff)  <  v.uv.x *1.2){ discard; }
                 //tCol = lerp(  tCol  , cutOff  , (cutOff * cutOff* cutOff));
-                float3 cCol = texCUBE(_CubeMap,refl);;// * color;
+                float4 tCol = texCUBE(_CubeMap,refl);;// * color;
 
 
-                float4 p1 = tex2D( _PLightMap1 , v.uv * 3 );
-                float4 p2 = tex2D( _PLightMap2 , v.uv * 3 );
-                float4 p3 = tex2D( _PLightMap3 , v.uv * 3 );
-                float4 p4 = tex2D( _PLightMap4 , v.uv * 3 );
-                float4 p5 = tex2D( _PLightMap5 , v.uv * 3 );
 
                 float3 fNor = v.nor;
                 float m = dot(_WorldSpaceLightPos0.xyz , fNor);
+ float4 p = tex2D( _PLightMap , v.uv * 3 );
+                m = 1-((1-m)*atten);
+                m *= 3;
 
-                float fern = dot( _WorldSpaceLightPos0, normalize(fNor) );
- 
-                m = 1-1.5*fern;//1-pow(fern,.7);//*fern*fern;//pow( fern * fern, 1);
-                //m = saturate( 1-m );
-                m = 5 * m;
+                float4 fLCol = float4(1,0,0,0);
 
-               // m *= (1- .8*UNITY_SHADOW_ATTENUATION(v,v.worldPos));
 
-                float4 fLCol = float4(1,0,0,1);
+                float4 weights = 0;
                 if( m < 1 ){
-                    fLCol = lerp( p1 , p2 , saturate(m) );
+                   weights = float4(1-m , m , 0, 0);//lerp( p.x , p.y , m );
                 }else if( m >= 1 && m < 2){
-                    fLCol = lerp( p2 , p3 , m-1 );
+                    weights = float4(0,1-(m-1) , (m-1) ,  0);
                 }else if( m >= 2 && m < 3){
-                    fLCol = lerp( p3 , p4 , m-2 );
-                }else if( m >= 3 && m < 4){
-                    fLCol = lerp( p4 , p5 , m-3 );
-                }else if( m >= 4 && m < 5){
-                    fLCol = lerp( p5 , p5 , m-4 );
+                    weights = float4(0,0,1-(m-2) , (m-2) );
                 }else{
-                    fLCol = p5;
+                  weights = float4(0,0,0 , 1);
                 }
+
+
+
+                fLCol = p.x * weights.x;
+                fLCol += p.y * weights.y;
+                fLCol += p.z * weights.z;
+                fLCol += p.w * weights.w;
+                fLCol = 1-fLCol;
 
                // if( ( lookupVal + 1.3) - 1.2*length( tCol ) < .5 ){ discard;}
                // fixed4 col = float4( cCol , 1 ) * 2 * shadow * v.uv.x * 1.4 * tex2D(_ColorMap , float2( -length(tCol) * .2 * v.uv.x * v.uv.x*v.uv.x* .5 - val * .1  + sin( v.kelpID) * .02 +  _HueStart, 0) );// * saturate(20*-val);//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
                 
-                fixed4 col =  tex2D(_ColorMap,float2(v.uv.x  * .3+.7, 0));
-                  col*= fLCol;//tex2D(_MainTex,v.uv * 5);
+                fixed4 col =  tex2D(_ColorMap,float2(v.uv.x  * .3+_HueStart, 0));
+                  col*= fLCol * tCol * 2;//tex2D(_MainTex,v.uv * 5);
                  // col*=shadow;
                 return col;
             }

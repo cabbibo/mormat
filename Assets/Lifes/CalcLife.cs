@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class CalcLife : Life{
   
   private float[] values;
@@ -52,4 +53,4 @@ public class CalcLife : Life{
 
 }
 
-
+}

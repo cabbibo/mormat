@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class InstancedMeshTris : MeshTris {
 
   public MeshTris tris;
@@ -32,4 +32,5 @@ public class InstancedMeshTris : MeshTris {
     }
     SetData(values);
   }
+}
 }

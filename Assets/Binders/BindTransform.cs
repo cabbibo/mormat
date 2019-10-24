@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class BindTransform : Binder
 {
 
@@ -16,3 +16,4 @@ public class BindTransform : Binder
       transformMatrix = transform.localToWorldMatrix;
     }
   }
+}

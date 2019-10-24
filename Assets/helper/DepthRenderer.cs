@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class DepthRenderer : Cycle
 {
 
@@ -48,4 +49,5 @@ public class DepthRenderer : Cycle
   }
 
 
+}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class Human : MonoBehaviour
 {
 
@@ -14,4 +15,5 @@ public class Human : MonoBehaviour
   public float Voice;
   public float DebugVal;
 
+}
 }

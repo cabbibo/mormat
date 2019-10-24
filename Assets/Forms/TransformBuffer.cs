@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TransformBuffer : Form
 {
 
@@ -42,4 +43,5 @@ public class TransformBuffer : Form
       SetInfo();
     }
   }
+}
 }

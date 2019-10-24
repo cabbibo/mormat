@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class BindReefParameters : Binder
 {
    
@@ -46,4 +46,5 @@ public class BindReefParameters : Binder
 
 
 
+}
 }

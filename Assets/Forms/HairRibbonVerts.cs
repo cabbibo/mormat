@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class HairRibbonVerts: Form {
 
   public Hair hair;
@@ -16,4 +17,5 @@ public class HairRibbonVerts: Form {
     count = numHairs * 2 * length;
   }
 
+}
 }

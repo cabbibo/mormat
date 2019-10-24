@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class SkinnedVerts : Form {
   
   public SkinnedMeshRenderer mesh;
@@ -149,4 +150,5 @@ public class SkinnedVerts : Form {
     SetData( values );
 
   }
+}
 }

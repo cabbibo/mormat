@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class FlockingBinder : Binder
 {
 public float _CurlSize;
@@ -51,4 +51,5 @@ toBind.BindFloat("_SpacePupRepelForce", () => _SpacePupRepelForce);
 }
 
 
+}
 }

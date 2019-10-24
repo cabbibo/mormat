@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TrailRibbonVerts: Form {
 
   public Particles heads;
@@ -16,4 +17,5 @@ public class TrailRibbonVerts: Form {
     count = numRibbons * 2 * length;
   }
 
+}
 }

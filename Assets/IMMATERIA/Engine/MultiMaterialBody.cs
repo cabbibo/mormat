@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
+namespace IMMATERIA {
 public class MultiMaterialBody : Body
 {
 
@@ -64,4 +65,5 @@ public class MultiMaterialBody : Body
   }
 
 
+}
 }

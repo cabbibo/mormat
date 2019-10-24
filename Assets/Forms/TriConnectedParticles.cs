@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TriConnectedParticles : Particles {
 
   public MeshTris tris;
@@ -112,4 +113,5 @@ public class TriConnectedParticles : Particles {
 
   }
 
+}
 }

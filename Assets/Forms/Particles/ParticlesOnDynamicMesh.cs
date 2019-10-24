@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class ParticlesOnDynamicMesh: Particles {
   
   public MeshFilter mesh;
@@ -155,4 +156,5 @@ public class ParticlesOnDynamicMesh: Particles {
     SetData( values );
 
   }
+}
 }

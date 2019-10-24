@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+namespace IMMATERIA {
 public class MeshTris : IndexForm {
 
 
@@ -18,5 +18,6 @@ public class MeshTris : IndexForm {
 
   public override void Embody(){ SetData(values); }
 
+}
 }
 

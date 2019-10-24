@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class ReduceLife : Life{
   
   private float[] values;
@@ -50,3 +51,4 @@ public class ReduceLife : Life{
 }
 
 
+}

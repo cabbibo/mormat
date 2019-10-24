@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 [ExecuteInEditMode]
 public class Cycle : MonoBehaviour{
 
@@ -534,4 +535,5 @@ void SetStates(){
       }
   }
 
+}
 }

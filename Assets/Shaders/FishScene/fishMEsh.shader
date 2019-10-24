@@ -7,10 +7,8 @@
        _NormalMap ("NormalMap", 2D) = "white" {}
        _ShinyMap ("ShinyMap", 2D) = "white" {}
 
-       _PLightMap1 ("PLightMap1", 2D) = "white" {}
-       _PLightMap2 ("PLightMap2", 2D) = "white" {}
-       _PLightMap3 ("PLightMap3", 2D) = "white" {}
-       _PLightMap4 ("PLightMap4", 2D) = "white" {}
+       
+        _PLightMap("Painterly Light Map", 2D) = "white" {}
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
 
         _ColorStart("_ColorStart",float) = 0
@@ -76,10 +74,8 @@ LIGHTING_COORDS(5,6)
             sampler2D _ShinyMap;
             sampler2D _NormalMap;
 
-            sampler2D _PLightMap1;
-            sampler2D _PLightMap2;
-            sampler2D _PLightMap3;
-            sampler2D _PLightMap4;
+          
+            sampler2D _PLightMap;
 
 
             samplerCUBE _CubeMap;
@@ -116,11 +112,6 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
 
             fixed4 frag (v2f v) : SV_Target
             {
-float4 p1 = tex2D( _PLightMap1 , v.uv * 3 );
-float4 p2 = tex2D( _PLightMap2 , v.uv * 3 );
-float4 p3 = tex2D( _PLightMap3 , v.uv * 3 );
-float4 p4 = tex2D( _PLightMap4 , v.uv * 3 );
-
 
 
  // sample the normal map, and decode from the Unity encoding
@@ -154,33 +145,42 @@ float atten = LIGHT_ATTENUATION(v);
 
 //                m = (-m* atten);
 
-                m = 3 * (m*(1-atten));
+                float4 p = tex2D( _PLightMap , v.uv * 3 );
+                m = 1-((1-m)*atten);
+                m *= 3;
+
+                float4 fLCol = float4(1,0,0,0);
 
 
-                float fLM =  m;
-
-
-                float4 fLCol = float4(1,0,0,1);
-                if( fLM < 1 ){
-                    fLCol = lerp( p1 , p2 , fLM );
-                }else if( fLM >= 1 && fLM < 2){
-                    fLCol = lerp( p2 , p3 , fLM-1 );
-                }else if( fLM >= 2 && fLM < 3){
-                    fLCol = lerp( p3 , p4 , fLM-2 );
+                float4 weights = 0;
+                if( m < 1 ){
+                   weights = float4(1-m , m , 0, 0);//lerp( p.x , p.y , m );
+                }else if( m >= 1 && m < 2){
+                    weights = float4(0,1-(m-1) , (m-1) ,  0);
+                }else if( m >= 2 && m < 3){
+                    weights = float4(0,0,1-(m-2) , (m-2) );
                 }else{
-                    fLCol = p4;
+                  weights = float4(0,0,0 , 1);
                 }
 
+
+
+                fLCol = p.x * weights.x;
+                fLCol += p.y * weights.y;
+                fLCol += p.z * weights.z;
+                fLCol += p.w * weights.w;
+                fLCol = 1-fLCol;
                 // sample the texture
 
 
                 float4 s3 = tex2D( _TextureMap , v.uv );
-                float4 s2 = tex2D( _ColorMap , float2(  sin(v.debug.x) * _ColorRandomSize + _ColorStart, 0) );
+                float4 s2 = tex2D( _ColorMap , float2(  sin(v.debug.x) * _ColorRandomSize + _ColorStart + v.debug.x * .2, 0) );
                 float3 shiny = tex2D(_ShinyMap,v.uv);
 
                 float3 fCol=lerp( pow(length(tCol),3)* .3* s2*3, pow(length(tCol),3) * .1 * s2 ,shiny.x)  *_Saturation + _Brightness;//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
                 
-                fCol*= atten;
+                fCol*= fLCol * 3;
+                //fCol = v.debug.x;
                 fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
             }

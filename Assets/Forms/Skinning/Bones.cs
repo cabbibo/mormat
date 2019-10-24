@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class Bones: Form {
   
   public Transform tmpTransform;
@@ -103,4 +104,5 @@ public override void WhileLiving( float v ){
 
 
 
+}
 }

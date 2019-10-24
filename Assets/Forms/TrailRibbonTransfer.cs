@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TrailRibbonTransfer : Cycle {
   
   public Form particles;
@@ -59,4 +60,5 @@ public class TrailRibbonTransfer : Cycle {
 
   }
 
+}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class HairRibbonTris: IndexForm {
 
   [ HideInInspector ] public int length;
@@ -43,4 +44,4 @@ public class HairRibbonTris: IndexForm {
     SetData(values);
   }
 
-}
+}}

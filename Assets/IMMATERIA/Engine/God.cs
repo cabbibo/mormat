@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 
 
+namespace IMMATERIA {
 public class God : Cycle {
 
 public bool AllInEditMode;
@@ -128,4 +129,5 @@ public void Rebuild(){
 
 
 
+}
 }

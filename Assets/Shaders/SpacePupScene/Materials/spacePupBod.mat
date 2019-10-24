@@ -24,7 +24,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ColorMap:
-        m_Texture: {fileID: 2800000, guid: 37d33d42954466e48b89fbee385acdff, type: 3}
+        m_Texture: {fileID: 2800000, guid: 5d6f94e4c6bdc0f45acea262ffdbfd92, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _CubeMap:
@@ -57,6 +57,10 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _PLightMap:
+        m_Texture: {fileID: 2800000, guid: 0eda96af060b05c4cb7aa60fe75ed2b2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _PLightMap1:
@@ -95,6 +99,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _HueStart: 0
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1

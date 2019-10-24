@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class SetPositionInShader : Cycle
 {
 
@@ -24,4 +25,5 @@ public class SetPositionInShader : Cycle
      // print("setting");
         render.sharedMaterial.SetVector( "_EyePos" , target.position );
     }
+}
 }

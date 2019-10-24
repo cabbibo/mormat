@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class RibbonTransfer : TransferLifeForm {
   
   
@@ -16,4 +17,5 @@ public class RibbonTransfer : TransferLifeForm {
     
   }
 
+}
 }

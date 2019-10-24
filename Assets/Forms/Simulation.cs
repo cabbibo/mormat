@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class Simulation : Cycle
 {
 
@@ -49,4 +50,4 @@ public class Simulation : Cycle
 
 
 }
-
+}

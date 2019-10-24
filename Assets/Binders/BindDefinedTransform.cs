@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class BindDefinedTransform : Binder
 { 
     public string transformName;
@@ -20,3 +20,4 @@ public class BindDefinedTransform : Binder
 
 
   }
+}

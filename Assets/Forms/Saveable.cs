@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
+namespace IMMATERIA {
 public class Saveable {
 
   public static void Save( Form form , string name ){
@@ -47,4 +48,5 @@ public class Saveable {
 
 
 
+}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+namespace IMMATERIA {
 public class ReRender : Cycle {
 
 
@@ -65,4 +66,5 @@ public class ReRender : Cycle {
 
 
 
+}
 }

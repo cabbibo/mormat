@@ -14,6 +14,8 @@ using UnityEngine;
 
 
 */
+
+namespace IMMATERIA {
 public class Data : Cycle
 {
 
@@ -59,4 +61,5 @@ public class Data : Cycle
     SERVER_TIME = Time.time;
   }
 
+}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TrailSim : Simulation
 {
 
@@ -28,4 +29,5 @@ public class TrailSim : Simulation
   }
 
 
+}
 }

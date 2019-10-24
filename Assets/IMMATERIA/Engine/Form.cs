@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
+namespace IMMATERIA {
 public class Form : Cycle {
 
 
@@ -108,4 +109,5 @@ public class Form : Cycle {
 
   }
 
+}
 }

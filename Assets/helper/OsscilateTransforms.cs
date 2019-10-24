@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class OsscilateTransforms : Cycle
 {
 
@@ -39,4 +40,5 @@ public class OsscilateTransforms : Cycle
 
 
   }
+}
 }

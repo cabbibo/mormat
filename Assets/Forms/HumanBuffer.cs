@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class HumanBuffer : Form
 {
 
@@ -66,4 +67,5 @@ public override void WhileLiving(float v){
 
 
 
+}
 }

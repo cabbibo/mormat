@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class SkinnedTriangles : IndexForm {
 
   [ HideInInspector ] public int width;
@@ -21,4 +22,4 @@ public class SkinnedTriangles : IndexForm {
   }
 
 }
-
+}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TransferLifeForm : LifeForm {
 
 
@@ -78,4 +79,5 @@ public class TransferLifeForm : LifeForm {
     showBody = false;
   }
 
+}
 }

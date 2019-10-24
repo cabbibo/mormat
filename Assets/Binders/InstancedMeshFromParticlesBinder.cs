@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class InstancedMeshFromParticlesBinder : Binder
 {
 
@@ -20,4 +20,5 @@ public class InstancedMeshFromParticlesBinder : Binder
     toBind.BindInt("_VertsPerMesh", () => v.vertsPerMesh );
   }
   
+}
 }

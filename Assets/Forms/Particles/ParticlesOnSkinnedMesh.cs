@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class ParticlesOnSkinnedMesh: Particles {
   
   public Mesh mesh;
@@ -148,4 +149,5 @@ public class ParticlesOnSkinnedMesh: Particles {
     SetData( values );
 
   }
+}
 }

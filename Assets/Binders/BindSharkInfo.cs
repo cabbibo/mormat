@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+namespace IMMATERIA {
 public class BindSharkInfo : Binder
 {
 
@@ -37,4 +37,5 @@ toBind.BindFloat("_SpacePupRepelForce", () => _SpacePupRepelForce);
 }
 
 
+}
 }

@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEditor;//.EditorGUI;
 
 
+namespace IMMATERIA {
 public class Life : Cycle {
 
   // automatically turns itself off
@@ -642,4 +643,5 @@ public class Life : Cycle {
     active = false;
   }
 
+}
 }

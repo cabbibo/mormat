@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class ToggleObjects : MonoBehaviour
 {
     public GameObject[] meshes;
@@ -32,4 +33,5 @@ public class ToggleObjects : MonoBehaviour
     
       print("TURNING ON");
     }
+}
 }

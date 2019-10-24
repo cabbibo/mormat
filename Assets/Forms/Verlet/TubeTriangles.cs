@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class TubeTriangles : IndexForm {
 
   [ HideInInspector ] public int width;
@@ -47,4 +48,4 @@ public class TubeTriangles : IndexForm {
   }
 
 }
-
+}

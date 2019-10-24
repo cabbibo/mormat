@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TriLife : CalcLife {
   
  public override void GetNumGroups(){
@@ -10,4 +11,5 @@ public class TriLife : CalcLife {
 
  
 
+}
 }

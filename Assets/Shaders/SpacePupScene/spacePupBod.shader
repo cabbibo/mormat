@@ -4,13 +4,10 @@
 
        _ColorMap ("ColorMap", 2D) = "white" {}
        _TextureMap ("TextureMap", 2D) = "white" {}
-       _PLightMap1 ("PLightMap1", 2D) = "white" {}
-       _PLightMap2 ("PLightMap2", 2D) = "white" {}
-       _PLightMap3 ("PLightMap3", 2D) = "white" {}
-       _PLightMap4 ("PLightMap4", 2D) = "white" {}
-       _PLightMap5 ("PLightMap5", 2D) = "white" {}
+       _PLightMap ("PLightMap", 2D) = "white" {}
 
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
+    _HueStart( "Hue Start" , float )  = 0
     
     }
 
@@ -73,6 +70,7 @@ LIGHTING_COORDS(5,6)
             };
 
             float4 _Color;
+            float _HueStart;
 
             StructuredBuffer<Vert> _VertBuffer;
             StructuredBuffer<int> _TriBuffer;
@@ -80,11 +78,7 @@ LIGHTING_COORDS(5,6)
             sampler2D _ColorMap;
             sampler2D _TextureMap;
 
-            sampler2D _PLightMap1;
-            sampler2D _PLightMap2;
-            sampler2D _PLightMap3;
-            sampler2D _PLightMap4;
-            sampler2D _PLightMap5;
+            sampler2D _PLightMap;
 
       samplerCUBE _CubeMap;
 
@@ -123,12 +117,7 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
                //float4 p4 = tex2D( _PLightMap4 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
                //float4 p5 = tex2D( _PLightMap5 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
            
- float4 p1 = tex2D( _PLightMap1 , v.uv * 10 );
- float4 p2 = tex2D( _PLightMap2 , v.uv * 10 );
- float4 p3 = tex2D( _PLightMap3 , v.uv * 10 );
- float4 p4 = tex2D( _PLightMap4 , v.uv * 10 );
- float4 p5 = tex2D( _PLightMap5 , v.uv * 10 );
-                float4 tFinal = t1 + t2 + t3;
+                 float4 tFinal = t1 + t2 + t3;
 
 
                 float3 fNor = v.nor;// + .9*float3( t1.x , t2.x, t3.x);
@@ -144,39 +133,44 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
 float atten = LIGHT_ATTENUATION(v);
                 //m = 1-pow(-fern,.7);//*fern*fern;//pow( fern * fern, 1);
                 //m = saturate( 1-m );
-
-                m = (-m* atten);
-
-                m = 5 * m;
+ float4 p = tex2D( _PLightMap , v.uv * 10 );
 
 
-                float fLM = 5-m;
-                float4 fLCol = float4(1,0,0,1);
-                if( fLM < 1 ){
-                    fLCol = lerp( p1 , p2 , fLM );
-                }else if( fLM >= 1 && fLM < 2){
-                    fLCol = lerp( p2 , p3 , fLM-1 );
-                }else if( fLM >= 2 && fLM < 3){
-                    fLCol = lerp( p3 , p4 , fLM-2 );
-                }else if( fLM >= 3 && fLM < 4){
-                    fLCol = lerp( p4 , p5 , fLM-3 );
-                }else if( fLM >= 4 && fLM < 5){
-                    fLCol = lerp( p5 , p5 , fLM-4 );
+                m = 1-((1-m)*atten);
+                m *= 3;
+
+                float4 fLCol = float4(1,0,0,0);
+
+
+                float4 weights = 0;
+                if( m < 1 ){
+                   weights = float4(1-m , m , 0, 0);//lerp( p.x , p.y , m );
+                }else if( m >= 1 && m < 2){
+                    weights = float4(0,1-(m-1) , (m-1) ,  0);
+                }else if( m >= 2 && m < 3){
+                    weights = float4(0,0,1-(m-2) , (m-2) );
                 }else{
-                    fLCol = p5;
+                  weights = float4(0,0,0 , 1);
                 }
 
+
+
+                fLCol = p.x * weights.x;
+                fLCol += p.y * weights.y;
+                fLCol += p.z * weights.z;
+                fLCol += p.w * weights.w;
+                fLCol = 1-fLCol;
 
 
 
 
 
                 float4 s = texCUBE( _CubeMap , refl );
-                float4 s2 = tex2D( _ColorMap , float2(m* .1+.8, 0) );
+                float4 s2 = tex2D( _ColorMap , float2(m* .1+_HueStart, 0) );
 
                 float fVal = (fLCol * .7 + .3) * s2;
 
-                float4 fCol =  fLCol *s2;//tex2D(_ColorMap , float2(saturate(fVal * .2 + .4 - .1*v.debug),0)) * (1-fVal) * s;//(v.debug * .4+.3);
+                float4 fCol =  fLCol *length(s)*.5 * s2;//tex2D(_ColorMap , float2(saturate(fVal * .2 + .4 - .1*v.debug),0)) * (1-fVal) * s;//(v.debug * .4+.3);
                
                 //fCol.xyz = fNor * .5 + .5;//s*fLCol;//saturate( -fCol );
                 // sample the texture

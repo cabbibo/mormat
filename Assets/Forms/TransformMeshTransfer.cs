@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TransformMeshTransfer : TransferLifeForm
 {
 
@@ -15,4 +16,5 @@ public class TransformMeshTransfer : TransferLifeForm
    transfer.BindForm("_SharkBuffer", shark);
    transfer.BindInt("_VertsPerMesh",() => baseBuffer.count);
   }
+}
 }

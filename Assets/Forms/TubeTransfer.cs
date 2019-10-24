@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class TubeTransfer : TransferLifeForm {
   
   
@@ -15,4 +16,5 @@ public class TubeTransfer : TransferLifeForm {
     transfer.BindInt( "_NumVertsPerHair" , () => s.numVertsPerHair  );
   }
 
+}
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-
+namespace IMMATERIA {
 public class IndexForm : Form {
 
 
@@ -34,4 +34,5 @@ public class IndexForm : Form {
 
   }
 
+}
 }

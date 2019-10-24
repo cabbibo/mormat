@@ -240,7 +240,7 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
    
     v.uv = fUV;
     v.vel = pos - v.pos;
-    v.debug = float2(float(trailID),head.debug.y);
+    v.debug = float2(val,head.debug.y);
     v.pos = pos;//pos;
     v.nor = fNor;//normalize(tang);
     v.tangent = fTan;//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));
@@ -303,7 +303,7 @@ void PerTrailTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_Group
    
     v.uv = fUV;
     v.vel = pos - v.pos;
-    v.debug = float2(float(trailID),trailParticle.debug.y);
+    v.debug = float2(val,trailParticle.debug.y);
     v.pos = pos;//pos;
     v.nor = fNor;//normalize(tang);
     v.tangent = fTan;//nor;// * ((float(pID)%2)-.5); //-normalize(cross(nor,tang));

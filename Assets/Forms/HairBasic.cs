@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class HairBasic : LifeForm {
 
   public Life set;
@@ -86,4 +87,5 @@ public int numFrames;
   }
 
 
+}
 }

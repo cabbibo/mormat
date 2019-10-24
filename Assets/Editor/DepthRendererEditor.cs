@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
+namespace IMMATERIA {
 [CustomEditor(typeof(DepthRenderer))]
 public class DepthRendererEditor : Editor 
 {  
@@ -36,4 +37,5 @@ public class DepthRendererEditor : Editor
    
 
 
+}
 }

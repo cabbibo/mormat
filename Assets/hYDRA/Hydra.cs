@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
+
 public class Hydra : Cycle
 {
 
@@ -292,4 +294,5 @@ public class Hydra : Cycle
 
 
 
+}
 }

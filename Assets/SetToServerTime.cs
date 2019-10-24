@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class SetToServerTime : Cycle
 {
 
@@ -23,4 +24,5 @@ public class SetToServerTime : Cycle
     animator.Update(delta);
     oT = data.SERVER_TIME;
   }
+}
 }

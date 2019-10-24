@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
+namespace IMMATERIA {
 public class TrailRibbonTris: IndexForm {
 
   [ HideInInspector ] public int length;
@@ -43,4 +44,5 @@ public class TrailRibbonTris: IndexForm {
     SetData(values);
   }
 
+}
 }

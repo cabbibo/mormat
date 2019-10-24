@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace IMMATERIA {
 public class MeshVerts : Form {
 
   [HideInInspector]public Mesh mesh;
@@ -105,4 +106,5 @@ public class MeshVerts : Form {
 
   }
 
+}
 }
