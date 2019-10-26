@@ -10,6 +10,7 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 /[Ss]creenshotFolder/
+/[Vv]ideos/
 
 # Never ignore Asset meta data
 !/[Aa]ssets/**/*.meta
