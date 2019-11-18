@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+using System.IO;
+
 namespace IMMATERIA {
 public class TriConnectedParticles : Particles {
 
   public MeshTris tris;
   public MeshVerts verts;
-
-    
 
   int[] triVals;
   int[][][] connections;
@@ -41,7 +41,6 @@ public class TriConnectedParticles : Particles {
 
 
   public override void Embody(){
-    print("tris");
 
    triVals = tris.GetTriData();
    connections = new int[count][][];
@@ -107,7 +106,6 @@ public class TriConnectedParticles : Particles {
     print( "MAX CONNECTION : " + maxConnections );
 
     SetData(values);
-
 
 
 

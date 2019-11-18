@@ -14,7 +14,31 @@ public bool started;
 
 public bool godPause;
 
+public List<Form> forms;
+public List<Life> lifes;
+public List<Binder> binders;
+
 public override void Create(){
+
+    if( forms == null ){ 
+        forms = new List<Form>(); 
+    }
+
+    if( lifes == null ){ 
+        lifes = new List<Life>(); 
+    }
+
+    if( binders == null ){ 
+        binders = new List<Binder>(); 
+    }
+
+    lifes.Clear();
+    forms.Clear();
+    binders.Clear();
+
+
+
+
 
     if( data != null ){
         SafePrepend(data);
@@ -22,11 +46,39 @@ public override void Create(){
         print("DUDE WHERE'S MY DATA");
     }
 
-    Application.targetFrameRate = 60;
+   //Application.targetFrameRate = 60;
 
 
 }
 
+public override void OnBirthed(){
+    GetCycleInfo( this );
+}
+
+public void GetCycleInfo( Cycle cycle ){
+    
+    if( cycle is Form ){
+        forms.Add( (Form)cycle );
+    }
+    if( cycle is Life ){
+        lifes.Add( (Life)cycle );
+    }
+
+    if( cycle is Binder ){
+        binders.Add( (Binder)cycle );
+    }
+
+    foreach( Cycle c in cycle.Cycles ){
+        GetCycleInfo( c );
+    }
+
+}
+
+public void SaveAllForms(){
+    foreach( Form f  in forms ){
+      Saveable.Save(f,f.saveName);
+    }
+}
 
 
 
@@ -44,6 +96,8 @@ public void LateUpdate(){
     if( created ){ _WhileDebug(); }
 
 }
+
+
 
 
 public void OnEnable(){
@@ -96,7 +150,7 @@ public void OnEnable(){
 public void OnDisable(){
 
 
-    print("god disabblee");
+    //print("god disabblee");
     #if UNITY_EDITOR 
         EditorApplication.update -= Always;
         _Destroy();   
@@ -118,6 +172,8 @@ void Always(){
   }
   #endif
 }
+
+
 
 
 

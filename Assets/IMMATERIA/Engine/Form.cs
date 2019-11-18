@@ -4,11 +4,19 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 
+using System;
+
+using System.IO;
+
+
 namespace IMMATERIA {
 public class Form : Cycle {
 
 
   public int count;
+
+  public string saveName;
+  public bool alwaysRemake;
 
   [HideInInspector] public bool intBuffer;
 
@@ -35,10 +43,24 @@ public class Form : Cycle {
   public override void _OnGestate(){ 
     DoGestate();
     _buffer = MakeBuffer();
-    Embody();
+    _Embody();
   }
 
   
+  public virtual void _Embody(){
+
+    if( String.IsNullOrEmpty(saveName) ){
+      saveName = "entity"+ UnityEngine.Random.Range(0,10000000);
+    }
+    if( Saveable.Check(saveName)){
+      Saveable.Load(this,saveName);
+    }else{
+      Embody();
+      Saveable.Save(this,saveName);
+    }
+
+  }
+
   public virtual void Embody(){}
   public virtual void SetCount(){}
   public virtual void SetStructSize(){}

@@ -15,6 +15,13 @@ public class GodEditor : Editor
             god.Rebuild();
         }
 
+
+        if(GUILayout.Button("Save Current Forms"))
+        {
+            god.SaveAllForms();
+        }
+
+
          DrawDefaultInspector();
 
 

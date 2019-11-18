@@ -25,7 +25,6 @@ public class ParticlesOnDynamicMesh: Particles {
 
   public override void SetStructSize(){ structSize = 24; }
 
-
   public override void Embody(){
 
     Mesh m = mesh.sharedMesh;
@@ -154,6 +153,8 @@ public class ParticlesOnDynamicMesh: Particles {
 
 
     SetData( values );
+
+
 
   }
 }
