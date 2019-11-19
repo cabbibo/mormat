@@ -181,7 +181,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     //vert.life -= .0003;
   vert.pos = mul(_FullLTW,float4(fPos,1));
 
-       if( length(vert.pos - worldPos) > 2){
+       if( length(vert.pos - worldPos) > 20){
       vert.pos = worldPos;
      }
   }

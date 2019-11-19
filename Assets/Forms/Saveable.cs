@@ -9,6 +9,30 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace IMMATERIA {
 public class Saveable {
 
+
+  public static List<string> names = new List<string>();
+  
+  public static string GetSafeName(){
+
+    string fString = "entity"+ UnityEngine.Random.Range(0,10000000);
+
+    foreach( string s in names ){
+      if( fString == s){
+        fString = GetSafeName();
+      }
+    }
+
+    names.Add( fString );
+    return fString;
+
+  }
+
+  public static void ClearNames(){
+    names.Clear();
+  }
+
+
+
   public static string GetFullName( string name ){
     return Application.dataPath + "/DNA/"+name+".dna";
   }
@@ -20,7 +44,9 @@ public class Saveable {
     return File.Exists(GetFullName(name));
   }
 
-
+  public static void Delete(string name ){
+    File.Delete( GetFullName(name));
+  }
 
   public static void Save( Form form , string name ){
 

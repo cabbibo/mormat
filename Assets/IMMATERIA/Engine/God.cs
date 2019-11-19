@@ -76,7 +76,14 @@ public void GetCycleInfo( Cycle cycle ){
 
 public void SaveAllForms(){
     foreach( Form f  in forms ){
-      Saveable.Save(f,f.saveName);
+
+     if( Saveable.Check(f.saveName)){
+        Saveable.Delete(f.saveName);
+     }
+
+        f.saveName = Saveable.GetSafeName();
+        Saveable.Save(f,f.saveName);
+        
     }
 }
 

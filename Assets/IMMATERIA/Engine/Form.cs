@@ -15,7 +15,7 @@ public class Form : Cycle {
 
   public int count;
 
-  public string saveName;
+  [HideInInspector] public string saveName;
   public bool alwaysRemake;
 
   [HideInInspector] public bool intBuffer;
@@ -52,7 +52,8 @@ public class Form : Cycle {
     if( String.IsNullOrEmpty(saveName) ){
       saveName = "entity"+ UnityEngine.Random.Range(0,10000000);
     }
-    if( Saveable.Check(saveName)){
+
+    if( Saveable.Check(saveName) && !alwaysRemake ){
       Saveable.Load(this,saveName);
     }else{
       Embody();
