@@ -7,6 +7,8 @@
     _ColorMap ("Color Map", 2D) = "white" {}
     _HueStart ("HueStart", Float) = 0
 
+    _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
+
   }
     SubShader
     {
@@ -36,12 +38,17 @@ Tags { "RenderType"="Opaque" }
 
             sampler2D _MainTex;
             sampler2D _ColorMap;
+            sampler2D _AudioMap;
+
+      samplerCUBE _CubeMap;
+
 
             struct v2f { 
               float4 pos : SV_POSITION; 
               float3 nor : NORMAL;
               float2 uv :TEXCOORD0; 
               float3 worldPos :TEXCOORD1;
+              float3 vel :TEXCOORD5;
               float2 debug :TEXCOORD3;
               float id :TEXCOORD4;
               UNITY_SHADOW_COORDS(2)
@@ -63,6 +70,7 @@ Tags { "RenderType"="Opaque" }
 
                 o.nor = v.nor;
                 o.uv = v.uv;
+                o.vel = v.vel;
                 o.worldPos = v.pos;
                 o.debug = v.debug;
                 o.id = vid / 12;
@@ -90,9 +98,11 @@ fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
 
                   float match = dot(normalize(_WorldSpaceLightPos0.xyz), normalize(v.nor));
                  //if( vL > .4 ){ discard; }
-                fixed4 col =  saturate(match+.5)*1.1*tCol*tex2D(_ColorMap , float2( length( tCol) * .1 + sin(vL*10 + length(tCol)*10 - _Time.y*10  * sin(v.id/300)) * .04 + sin(v.id/1000) * .2+  _HueStart   + match *.2, 0) );//saturate(((_Time-v.debug.y) * 1 )) *  tex2D(_ColorMap , float2( length( tCol) * length( tCol ) * .1  + _HueStart , 0) )  * tCol* tCol;//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
+                 float4 aCol = tex2D(_AudioMap,v.debug.y * .1 + float2( length(v.uv-.5) * .04 , 0) );
+                fixed4 col = 1;
+                col.xyz =  aCol * aCol * 2 * (normalize(v.vel) *  .5 + .5) * clamp(length(v.vel) * 30, 0 ,1);//match;//saturate(match+.5)*1.1*tCol*tex2D(_ColorMap , float2( length( tCol) * .1 + sin(vL*10 + length(tCol)*10 - _Time.y*10  * sin(v.id/300)) * .04 + sin(v.id/1000) * .2+  _HueStart   + match *.2, 0) );//saturate(((_Time-v.debug.y) * 1 )) *  tex2D(_ColorMap , float2( length( tCol) * length( tCol ) * .1  + _HueStart , 0) )  * tCol* tCol;//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
                 
-                  if( v.debug.x > .5 ){ col =float4(1,0,0,1);}
+                  //if( v.debug.x > .5 ){ col =float4(1,0,0,1);}
                 return col;
             }
 
@@ -145,5 +155,5 @@ fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
 
 
 
-
+    Fallback "Diffuse"
 }

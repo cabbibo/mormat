@@ -7,10 +7,10 @@ public class ParticleTransferVerts: Form {
 
 
   public Particles particles;
+  public float countMultiplier = 1;
 
 
-
-    public override void _Create(){
+  public override void _Create(){
     
     if( particles == null ){particles = GetComponent<Particles>(); }
     SetStructSize();
@@ -26,7 +26,7 @@ public class ParticleTransferVerts: Form {
     // 0-1
     // |/|
     // 2-3
-    count = particles.count * 4;
+    count = (int)((float)(particles.count * 4) * countMultiplier);
   }
 
   

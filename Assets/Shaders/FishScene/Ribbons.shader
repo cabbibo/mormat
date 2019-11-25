@@ -17,7 +17,13 @@
        _PLightMap3 ("PLightMap3", 2D) = "white" {}
        _PLightMap4 ("PLightMap4", 2D) = "white" {}
        _PLightMap5 ("PLightMap5", 2D) = "white" {}
-       _ColorMap ("ColorMap", 2D) = "white" {}
+       _ColorMap1 ("ColorMap", 2D) = "white" {}
+       _ColorMap2 ("ColorMap", 2D) = "white" {}
+       _ColorMap3 ("ColorMap", 2D) = "white" {}
+       _ColorMap4 ("ColorMap", 2D) = "white" {}
+
+
+    _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
   }
 
     SubShader {
@@ -69,8 +75,16 @@ ZFail keep
       float3 _PlayerPosition;
       float _FalloffRadius;
       sampler2D _MainTex;
-      sampler2D _ColorMap;
+      sampler2D _ColorMap1;
+      sampler2D _ColorMap2;
+      sampler2D _ColorMap3;
+      sampler2D _ColorMap4;
       sampler2D _BumpMap;
+
+
+            sampler2D _AudioMap;
+
+      samplerCUBE _CubeMap;
 
 
             struct varyings {
@@ -141,7 +155,7 @@ ZFail keep
 
 
               float4 color = float4(0,0,0,0);// = tex2D(_MainTex,v.uv );
-              float4 tCol = tex2D(_MainTex,v.uv );
+              float4 col = tex2D(_MainTex,v.uv );
 
 
  // sample the normal map, and decode from the Unity encoding
@@ -152,20 +166,17 @@ ZFail keep
                 worldNormal.y = dot(v.tspace1, tnormal);
                 worldNormal.z = dot(v.tspace2, tnormal);
 
-               worldNormal = lerp( v.nor , worldNormal , tCol.x);
+               worldNormal = lerp( v.nor , worldNormal , col.x);
           half3 worldViewDir = normalize(UnityWorldSpaceViewDir(v.worldPos));
                 //half3 worldRefl = reflect(-worldViewDir, worldNormal);
                 half3 worldRefl = refract(worldViewDir, worldNormal,.8);
                 half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, worldRefl);
                 half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
 
+                float4 tCol = texCUBE(_CubeMap, worldRefl);
 
-                float4 p1 = tex2D( _PLightMap1 , v.uv * float2(.1,3.8)*2 );
-                float4 p2 = tex2D( _PLightMap2 , v.uv * float2(.1,3.8)*2 );
-                float4 p3 = tex2D( _PLightMap3 , v.uv * float2(.1,3.8)*2 );
-                float4 p4 = tex2D( _PLightMap4 , v.uv * float2(.1,3.8)*2 );
-                float4 p5 = tex2D( _PLightMap5 , v.uv * float2(.1,3.8)*2 );
 
+              
                 float3 fNor = v.nor;
 
                 fNor = v.tang;//normalize(cross(normalize(v.vel* 100), v.nor));
@@ -179,29 +190,31 @@ ZFail keep
 
                 m =  3-3*( .8*UNITY_SHADOW_ATTENUATION(v,v.worldPos));
 
-                float4 fLCol = float4(1,0,0,1);
-                if( m < 1 ){
-                    fLCol = lerp( p1 , p2 , saturate(m) );
-                }else if( m >= 1 && m < 2){
-                    fLCol = lerp( p2 , p3 , m-1 );
-                }else if( m >= 2 && m < 3){
-                    fLCol = lerp( p3 , p4 , m-2 );
-                }else if( m >= 3 && m < 4){
-                    fLCol = lerp( p4 , p5 , m-3 );
-                }else if( m >= 4 && m < 5){
-                    fLCol = lerp( p5 , p5 , m-4 );
-                }else{
-                    fLCol = p5;
-                }
+              
 
 
-              float4 cCol = tex2D(_ColorMap,float2(tCol.x * _ColorWidth + _ColorStart,0) );
+              float4 cCol1 = tex2D(_ColorMap1,float2(tCol.x * _ColorWidth + _ColorStart + v.uv.x * .3 + sin(v.debug.x *100) - _Time.y * .1,0) );
+              float4 cCol2 = tex2D(_ColorMap2,float2(tCol.x * _ColorWidth + _ColorStart + v.uv.x * .3 + sin(v.debug.x *100) - _Time.y * .1,0) );
+              float4 cCol3 = tex2D(_ColorMap3,float2(tCol.x * _ColorWidth + _ColorStart + v.uv.x * .3 + sin(v.debug.x *100) - _Time.y * .1,0) );
+              float4 cCol4 = tex2D(_ColorMap4,float2(tCol.x * _ColorWidth + _ColorStart + v.uv.x * .3 + sin(v.debug.x *100) - _Time.y * .1,0) );
         
             //  fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos  ) * .7 + .3 ;
-              
-              color.xyz =(fLCol * .8 + .2) * cCol;//skyColor  * cCol ;// * tCol;;//worldNormal * .5 + .5;//tCol;
+
+            float which = floor((sin(v.debug.x) + 1) * 2);
+
+            if( which == 0 ){
+              color.xyz = cCol1;
+            }else if( which == 1 ){
+              color.xyz = cCol2;
+            }else if( which == 2 ){
+              color.xyz = cCol3;
+            }else if( which == 3 ){
+              color.xyz = cCol4;
+            }
+              color.xyz *= 2*tCol;//skyColor;
+             // color.xyz =(sin(v.debug.x) + 1) * 2;//(fLCol * .8 + .2) * cCol;//skyColor  * cCol ;// * tCol;;//worldNormal * .5 + .5;//tCol;
              // color =  float4(v.nor * .5 + .5,1);//v.uv.x;
-              if( tCol.a < .3 ){ discard; }    
+              if( col.a < .3 ){ discard; }    
               return float4( color.xyz, 1.);
             }
 

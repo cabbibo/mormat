@@ -80,16 +80,54 @@ public void SaveAllForms(){
      if( Saveable.Check(f.saveName)){
         Saveable.Delete(f.saveName);
      }
-
-        f.saveName = Saveable.GetSafeName();
-        Saveable.Save(f,f.saveName);
         
     }
+
+    Saveable.ClearNames();
+
+    foreach( Form f in forms ){
+        f.saveName = Saveable.GetSafeName();
+        Saveable.Save(f);
+    }
+}
+
+
+public void FullRebuild(){
+
+    foreach( Form f  in forms ){  
+     if( Saveable.Check(f.saveName)){
+        Saveable.Delete(f.saveName);
+     } 
+    new WaitForSeconds(5);
+
+     f.alwaysRemake = true;
+    }
+
+    Saveable.DeleteAll();
+    Reset();
+    OnDisable();
+    OnEnable();
+  
+  
+    Saveable.ClearNames();
+
+    foreach( Form f in forms ){
+        f.saveName = Saveable.GetSafeName();
+        Saveable.Save(f);
+        f.alwaysRemake = false;
+    
+    }
+
+    DebugThis("" +Saveable.CheckIfAllNamesSafe());
+
+     
 }
 
 
 
 public void LateUpdate(){
+
+    if(!godPause){
 
     if( started == false ){ 
         _OnLive(); 
@@ -101,6 +139,7 @@ public void LateUpdate(){
     if( dying ){ _WhileDying(1); }
 
     if( created ){ _WhileDebug(); }
+}
 
 }
 

@@ -138,6 +138,7 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     v.uv = fUV;
     v.tangent = fTan;
     v.debug = float2(float(particleID),length(v.pos-fPos));
+    v.vel = v.pos - fPos;
     v.pos = fPos;
     _VertBuffer[sID] = v;
 

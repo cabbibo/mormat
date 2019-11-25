@@ -5,8 +5,6 @@ using UnityEngine;
 namespace IMMATERIA {
 public class TrailRibbonTransfer : Cycle {
   
-  public Form particles;
-
   public Form verts;
   public IndexForm triangles; 
   public Life transfer;
@@ -53,7 +51,7 @@ public class TrailRibbonTransfer : Cycle {
     //parallel.BindInt( "_RibbonLength"     ,   () => v.length  );
     //parallel.BindInt( "_NumVertsPerHair"  ,   () => v.length  );
 
-    //data.BindCameraData( parallel );
+    data.BindCameraData( transfer);
 
     //parallel.BindFloat( "_Radius" ,  () => this.radius );
     transfer.BindFloat( "_Radius" ,  () => this.radius );

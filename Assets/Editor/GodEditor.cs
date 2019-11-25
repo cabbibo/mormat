@@ -22,6 +22,12 @@ public class GodEditor : Editor
         }
 
 
+        if(GUILayout.Button("Full Rebuild"))
+        {
+            god.FullRebuild();
+        }
+
+
          DrawDefaultInspector();
 
 

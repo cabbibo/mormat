@@ -91,7 +91,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   float scale = mul( _Transform,float4(0,1,0,0)).y;
   float3 fPos = mul(_FullWTL,float4(vert.pos,1));
 
-  if( vert.life <= 0 || vert.life >= 1){
+  if( vert.life <= 0 || vert.life > 1){
     fPos = mul( _Transform,float4(0,0,0,1)).xyz;
     float3 up = mul( _Transform,float4(0,1,0,0));
     float3 right = mul( _Transform,float4(1,0,0,0));
@@ -106,7 +106,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     vert.axis = normalize( v);
     float3 dir = normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .1;
     vert.vel = 0;// (v * 1 + dir) * .001;
-    vert.life = hash(float(pID)) * .5 + .5;
+    vert.life = 1;
     vert.pos = fPos;
   }else{
     float3 force = 0;
@@ -135,7 +135,7 @@ float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
   m = m/_FullScale;
   nor2 = normalize(mul(_FullWTL,float4(terrarium,0)));
 
-  if( m < 0 ){ force += .3*m *nor2; }//*nor2; }
+//  if( m < 0 ){ force += .3*m *nor2; }//*nor2; }
 //  if( m < 0.1 ){ force += m; }//*nor2; }
 
     if( length(force)> 1 ){ force = normalize(force) * 1;}
@@ -152,7 +152,7 @@ float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
 
 
     vert.vel *= .9;//* minDist;
-    vert.life -= .003;//_LifeReduceSpeed;
+    vert.life -= .005 * ( hash(float(pID)) * .5 + .5);//_LifeReduceSpeed;
 
     vert.pos = mul(_FullLTW,float4(fPos,1)).xyz;
   }

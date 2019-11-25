@@ -151,9 +151,10 @@ void Physics(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 
 
 */
 
-
+  
+    vert.vel = base.pos - base.oPos;
     vert.nor = base.nor;
-    vert.debug = float2( base.debug.x , base.ateTime );
+    vert.debug = float2( base.debug.x , float(pID) / float(_VertBuffer_COUNT)  );
     vert.pos = base.pos;
 
 

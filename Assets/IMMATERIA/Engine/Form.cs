@@ -31,6 +31,8 @@ public class Form : Cycle {
   public Material debugMaterial;
   protected MaterialPropertyBlock mpb;
 
+  public bool loadedFromFile;
+
   public override void _Create(){
     if( mpb == null ){ mpb = new MaterialPropertyBlock(); }
     DoCreate();
@@ -54,10 +56,13 @@ public class Form : Cycle {
     }
 
     if( Saveable.Check(saveName) && !alwaysRemake ){
-      Saveable.Load(this,saveName);
+      
+      loadedFromFile = true;
+      Saveable.Load(this);
     }else{
+      loadedFromFile = false;
       Embody();
-      Saveable.Save(this,saveName);
+      Saveable.Save(this);
     }
 
   }

@@ -229,8 +229,8 @@ void TrailTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID)
    
     float3 pos = cubicFromValue( rowVal , particleID , upPos , doPos , tang , nor  );
 
-    float3 d = normalize(upPos - doPos );
-    float3 x = normalize(cross( d , tang) );
+    float3 d = normalize(pos - doPos );
+    float3 x = normalize(cross( d , _CameraRight) );
     float3 y = normalize(cross( x , d));
 
     float angle = colVal * 2*3.14159;
@@ -238,7 +238,7 @@ void TrailTransfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID)
 //float4 vals = _HeightMap.SampleLevel(sampler_HeightMap, (baseParticle.pos.xz-.5) * _MapSize  , 0);//tex2Dlod(_HeightMap , float4(pos.xz * _MapSize,0,0) );
     float l = 1 - saturate( baseParticle.debug.y ) ;
     //float r =   _Radius  *  saturate(min( rowVal * 4,1-rowVal ))*saturate( min( l * 10 , 1-l)) ;
-    float r =   _Radius  * saturate( min( l * 10 , 1-l)) ;
+    float r =   _Radius  * saturate( min( l * 4 , 1-l)) ;
 
     //if( baseParticle.debug.x < .1 ){ r = 0;}
 
