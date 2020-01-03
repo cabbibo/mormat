@@ -116,12 +116,12 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
     //force += normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .0003;
     force += curlNoise( fPos * 10   ) * .0004;
 
-    force += HumanForces( vert.pos );
+    force += HumanRayForces( vert.pos );
 
 
 float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
     
- float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.4,.4,.4));
+ float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.43  ,.43,.43));
 
    float3 eps = float3(.001 , 0, 0);
 

@@ -1,4 +1,6 @@
 ﻿#pragma kernel Transfer
+#pragma kernel TransferRope
+
 
 struct Vert{
     float3 pos;
@@ -122,6 +124,60 @@ void Transfer (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
 
     // Giving some variance of radius over length of tentacle
     r *= saturate(min( rowVal * 10 + .3, (1-pow(rowVal,2)*1.3)));
+
+    float3 outVec = (sin(angle) *x - cos(angle) * y);// * r;
+    float3 fPos = pos + outVec * r ;// * (.1 + rowVal* rowVal);
+
+    float2 fUV = float2( rowVal , colVal + col / _TubeWidth );
+    float3 fNor = normalize( outVec );
+    float3 fTan = normalize(cross(fNor,d));
+
+    int sID = safeID( pID , _VertBuffer_COUNT );
+    Vert v = _VertBuffer[sID];
+
+   
+    v.nor = fNor;
+    v.uv = fUV;
+    v.tangent = fTan;
+    v.debug = float2(float(particleID),length(v.pos-fPos));
+    v.vel = v.pos - fPos;
+    v.pos = fPos;
+    _VertBuffer[sID] = v;
+
+}
+
+
+
+
+#define NR_THREADS 128
+[numthreads(NR_THREADS,1,1)]
+void TransferRope(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
+
+    int pID = threadID + u3GroupID.x * NR_THREADS;
+
+    int particleID = pID / ( _TubeLength * (_TubeWidth+1));
+
+    int idInTube = pID % ( _TubeLength * (_TubeWidth+1));
+    int row = idInTube / (_TubeWidth+1);
+    int col = pID % (_TubeWidth+1);
+
+    float rowVal =  (float(row) / float(_TubeLength));
+    float colVal =  (float(col%_TubeWidth)/float(_TubeWidth)) ;
+
+    float3 upPos; float3 doPos;
+
+    float3 pos = cubicFromValue( rowVal , particleID , upPos , doPos );
+
+    float3 d = normalize(upPos - pos);
+    float3 x = normalize(cross( d , float3(1,0,0)) );
+    float3 y = normalize(cross( x , d));
+
+    float angle = colVal * 2*3.14159;
+
+    float r = _Radius * _SkeletonBuffer[safeID(particleID *_NumVertsPerHair , _SkeletonBuffer_COUNT)].debug.x;
+
+    // Giving some variance of radius over length of tentacle
+    //r *= saturate(min( rowVal * 10 + .3, (1-pow(rowVal,2)*1.3)));
 
     float3 outVec = (sin(angle) *x - cos(angle) * y);// * r;
     float3 fPos = pos + outVec * r ;// * (.1 + rowVal* rowVal);

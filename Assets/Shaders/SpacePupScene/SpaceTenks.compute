@@ -159,8 +159,8 @@ void Set (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id 
 
 
        
-    vert.pos = base.pos - base.nor * l * vert.debug.x;
-    vert.oPos = vert.pos;
+    //vert.pos = base.pos - base.nor * l * vert.debug.x;
+    //vert.oPos = vert.pos;
 
 
         
@@ -205,7 +205,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
 
 
 
-    force += HumanForces( vert.pos );
+    force += HumanRayForces( vert.pos );
     float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
     float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.35,.35,.35));
 

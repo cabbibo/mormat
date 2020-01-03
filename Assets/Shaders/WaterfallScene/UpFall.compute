@@ -111,12 +111,12 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   }else{
     float3 force = 0;
 
-    force += float3(0,.0008,0);
+    force += float3(0,.0002,0);
 
     //force += normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .0003;
-    force += curlNoise( fPos * 10   ) * .0004;
+    force += curlNoise( fPos * 4  + float3(0,_Time * .3,0)) * .0001;
 
-    force += HumanForces( vert.pos );
+    force += HumanRayForces( vert.pos );
 
 
 float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
@@ -135,7 +135,7 @@ float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
   m = m/_FullScale;
   nor2 = normalize(mul(_FullWTL,float4(terrarium,0)));
 
-//  if( m < 0 ){ force += .3*m *nor2; }//*nor2; }
+ if( m < 0 ){ force += .03*m * terrarium; }//*nor2; }
 //  if( m < 0.1 ){ force += m; }//*nor2; }
 
     if( length(force)> 1 ){ force = normalize(force) * 1;}
@@ -152,7 +152,7 @@ float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
 
 
     vert.vel *= .9;//* minDist;
-    vert.life -= .005 * ( hash(float(pID)) * .5 + .5);//_LifeReduceSpeed;
+    vert.life -= .002 * ( hash(float(pID)) * .5 + .5);//_LifeReduceSpeed;
 
     vert.pos = mul(_FullLTW,float4(fPos,1)).xyz;
   }

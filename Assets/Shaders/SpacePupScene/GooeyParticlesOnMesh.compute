@@ -150,7 +150,7 @@ float3 force = 0;
 
 
     float4x4 fTerr = mul( _FullWTL,_Terrarium );
-    //force += HumanForces( p.pos );
+    force += HumanRayForces( p.pos );
     float3 terrarium = mul(_Terrarium , float4( p.pos ,1)).xyz;
     float m = sdBox( mul( _Terrarium , float4( p.pos ,1)).xyz , float3(.35,.35,.35));
     float3 tNor = normalize(terrarium);

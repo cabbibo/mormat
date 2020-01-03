@@ -159,8 +159,8 @@ void Set (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uint3 id 
 
 
        
-    vert.pos = base.pos - base.nor * l * vert.debug.x;
-    vert.oPos = vert.pos;
+    //vert.pos = base.pos - base.nor * l * vert.debug.x;
+    //vert.oPos = vert.pos;
 
 
         

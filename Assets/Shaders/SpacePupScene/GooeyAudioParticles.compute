@@ -133,7 +133,7 @@ float3 force = 0;
 
     force -= (fPos - targetPos)* _ReturnStrength;// * velMatch;
     //force += curlNoise( (fPos * _CurlSize+ _Time*_CurlSpeed)  ) * _CurlStrength;
-
+    force += HumanRayForces(p.pos);
     float3 dif;
     float aVal;
     float len;

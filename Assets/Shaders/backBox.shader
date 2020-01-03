@@ -54,6 +54,7 @@
                 col = tex2D(_ColorMap, float2(col.x * .2 + .4,0));// * 1.4 * col.x;
                 //col += tex2D(_ColorMap, float2(col.x * .1,0)) * 1.4 * col.x;
                 // apply fog
+                col = 1;
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
             }

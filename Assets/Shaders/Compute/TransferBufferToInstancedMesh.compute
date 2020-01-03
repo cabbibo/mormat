@@ -112,7 +112,7 @@ void Gooey (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
       
     }
 
-    force += mul(_FullLTW, float4(HumanForces(v.pos),0) ).xyz; 
+    force += mul(_FullLTW, float4(HumanRayForces(v.pos),0) ).xyz; 
 
 
     v.vel += force;

@@ -84,8 +84,12 @@ public class Saveable {
 
 
 
-  public static void Save( Form form){
+    public static void Save( Form form){
 
+    if( form._buffer == null ){
+      form.DebugThis("NULL BUFFER ON SAVE");
+
+    }else{
     BinaryFormatter bf = new BinaryFormatter();
     FileStream stream = new FileStream(GetFullName(form.saveName),FileMode.Create);
 
@@ -99,30 +103,71 @@ public class Saveable {
 
     stream.Close();
   }
+  }
 
+      public static void Save( Form form , string name ){
+
+    BinaryFormatter bf = new BinaryFormatter();
+    FileStream stream = new FileStream(Application.dataPath + "/"+name+".dna",FileMode.Create);
+
+    if( form.intBuffer ){
+      int[] data = form.GetIntDNA();
+      bf.Serialize(stream,data);
+    }else{
+      float[] data = form.GetDNA();
+      bf.Serialize(stream,data);
+    }
+
+    stream.Close();
+  }
+
+
+  
   public static void Load(Form form){
+
+
     if( File.Exists(GetFullName(form.saveName))){
       
       BinaryFormatter bf = new BinaryFormatter();
-      FileStream stream = new FileStream(GetFullName(form.saveName),FileMode.Open);
+      FileStream stream = File.OpenRead(GetFullName(form.saveName));
 
 
       
       if( form.intBuffer ){
         int[] data = bf.Deserialize(stream) as int[];
-        if( data.Length != form.count * form.structSize ){
-          form.DebugThis("YOUR INPUT DATA IS OFF");
+
+        if( data == null ){
+          form.DebugThis("YOUR  DATA IS NULL");
           form.saveName = GetSafeName();
           form.Embody();
           form.loadedFromFile = false;
           Saveable.Save(form);
-
         }else{
-          //form.DebugThis("loadedFromFileee");
-          form.SetDNA(data);
+
+          //form.DebugThis("hello");
+          //form.DebugThis("" + stream);
+          //form.DebugThis("" + data.Length);
+          if( data.Length != form.count * form.structSize ){
+            form.DebugThis("YOUR INPUT DATA IS OFF");
+            form.saveName = GetSafeName();
+            form.Embody();
+            form.loadedFromFile = false;
+            Saveable.Save(form);
+
+          }else{
+            //form.DebugThis("loadedFromFileee");
+            form.SetDNA(data);
+          }
         }
       }else{
         float[] data = bf.Deserialize(stream) as float[];
+        if( data == null ){
+                form.DebugThis("NULL DATA");
+          form.saveName = GetSafeName();
+          form.Embody();
+          form.loadedFromFile = false;
+          Saveable.Save(form);
+        }else{
 
         if( data.Length != form.count * form.structSize ){
           form.DebugThis("YOUR INPUT DATA IS OFF");
@@ -136,6 +181,7 @@ public class Saveable {
          // form.DebugThis("loadedFromFileee");
           form.SetDNA(data);
         }
+      }
       }
 
       stream.Close();
