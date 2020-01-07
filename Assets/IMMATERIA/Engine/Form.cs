@@ -15,7 +15,7 @@ public class Form : Cycle {
 
   public int count;
 
-  [HideInInspector] public string saveName;
+   public string saveName;
   public bool alwaysRemake;
 
   [HideInInspector] public bool intBuffer;

@@ -6,18 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/hydraScene.unity
+    path: Assets/Scenes/Old/hydraScene.unity
     guid: 5453fe461f5cdf54d82be310def484f9
   - enabled: 0
-    path: Assets/Scenes/fish monolith scene.unity
+    path: Assets/Scenes/Old/fish monolith scene.unity
     guid: 59f6fd117d300214a8a8b7f1bb943d23
   - enabled: 0
-    path: Assets/Scenes/pupScene.unity
+    path: Assets/Scenes/Old/pupScene.unity
     guid: 78e5e8213c5d243498a85d00c841d62a
   - enabled: 0
-    path: Assets/Scenes/All.unity
+    path: Assets/Scenes/Old/All.unity
     guid: f9474682aa9bbb64c98acc38c7e38478
   - enabled: 1
-    path: Assets/bridgeScene.unity
+    path: Assets/Scenes/bridgeScene.unity
     guid: 2b1e27180d4fed74e8763797ba85b3ac
   m_configObjects: {}

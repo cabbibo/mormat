@@ -14,6 +14,8 @@ int _HumanBuffer_COUNT;
 float _HumanRadius;
 float _HumanForce;
 
+int _HeadForce;
+
 
 
 float3 HumanForces(float3 p){
@@ -44,12 +46,12 @@ float3 HumanForces(float3 p){
       totalForce += normalize( d ) * v;
     }
 
+      d = p - hH;
+      if( length( d ) < _HumanRadius && length( d ) > .001 ){ 
+        float v = (_HumanRadius - length( d )) / _HumanRadius;
+        totalForce += normalize( d ) * v;
+      }
 
-    d = p - hH;
-    if( length( d ) < _HumanRadius && length( d ) > .001 ){ 
-      float v = (_HumanRadius - length( d )) / _HumanRadius;
-      totalForce += normalize( d ) * v;
-    }
 
     
 
@@ -104,13 +106,15 @@ float3 HumanRayForces(float3 p){
       totalForce += normalize( d ) * v;
     }
 
+    if(_HeadForce == 1){
+
 
     d = GetHumanRayToPoint( p,h.head );
     if( length( d ) < _HumanRadius && length( d ) > .001 ){ 
       float v = (_HumanRadius - length( d )) / _HumanRadius;
       totalForce += normalize( d ) * v;
     }
-
+}
     
 
   }
