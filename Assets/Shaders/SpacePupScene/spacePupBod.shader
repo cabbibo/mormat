@@ -1,49 +1,51 @@
 ﻿Shader "Scenes/SpacePup/Body"
 {
-    Properties {
+ 
+        Properties {
 
        _ColorMap ("ColorMap", 2D) = "white" {}
        _TextureMap ("TextureMap", 2D) = "white" {}
-       _PLightMap ("PLightMap", 2D) = "white" {}
+       _NormalMap ("NormalMap", 2D) = "white" {}
+       _ShinyMap ("ShinyMap", 2D) = "white" {}
 
+       
+        _PLightMap("Painterly Light Map", 2D) = "white" {}
     _CubeMap( "Cube Map" , Cube )  = "defaulttexture" {}
-    _HueStart( "Hue Start" , float )  = 0
+
+        _ColorStart("_ColorStart",float) = 0
+        _ColorRandomSize("_ColorRandomSize",float) = 0
+        _ColorStart("_ColorStart",float) = 0
+        _Saturation("_Saturation",float) = .3
+        _Brightness("_Brightness",float) = .1
     
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque"}
+        Tags { "RenderType"="Opaque" }
         LOD 100
 
         Cull Off
         Pass
         {
 
-          // Lighting/ Texture Pass
-Stencil
+          Stencil
 {
-Ref 5
+Ref 3
 Comp always
 Pass replace
 ZFail keep
 }
-
-          Tags{  "LightMode" = "ForwardBase"}
             CGPROGRAM
-
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 4.5
-
+            #include "UnityCG.cginc"
 
             #pragma multi_compile_fwdbase
             #pragma fragmentoption ARB_precision_hint_fastest
 
-            #include "UnityCG.cginc"
             #include "AutoLight.cginc"
-
-
             struct Vert{
       float3 pos;
       float3 vel;
@@ -59,44 +61,60 @@ ZFail keep
             struct v2f { 
                 float4 pos : SV_POSITION; 
                 float3 nor : NORMAL; 
-                float debug : TEXCOORD0; 
-                float3 eye : TEXCOORD1; 
-                float2 uv : TEXCOORD3; 
-                float3 world : TEXCOORD2; 
-                float4 screenPos : TEXCOORD4; 
-
+                float3 world : TEXCOORD1; 
+                float2 uv  : TEXCOORD2; 
+                float2 debug  : TEXCOORD3; 
+      half3 tspace0 : TEXCOORD11; // tangent.x, bitangent.x, normal.x
+                half3 tspace1 : TEXCOORD12; // tangent.y, bitangent.y, normal.y
+                half3 tspace2 : TEXCOORD13; // tangent.z, bitangent.z, normal.z
+                half3 tang : TEXCOORD14; // tangent.z, bitangent.z, normal.z
 // in v2f struct;
 LIGHTING_COORDS(5,6)
-            };
 
+            };
             float4 _Color;
-            float _HueStart;
 
             StructuredBuffer<Vert> _VertBuffer;
             StructuredBuffer<int> _TriBuffer;
 
-            sampler2D _ColorMap;
-            sampler2D _TextureMap;
 
+           sampler2D _ColorMap;
+            sampler2D _TextureMap;
+            sampler2D _ShinyMap;
+            sampler2D _NormalMap;
+
+          
             sampler2D _PLightMap;
 
-      samplerCUBE _CubeMap;
+
+            samplerCUBE _CubeMap;
+
+            float _ColorStart;
+            float _ColorRandomSize;
+            float _Saturation;
+            float _Brightness;
 
             v2f vert ( uint vid : SV_VertexID )
             {
                 v2f o;
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-            
-            
-                o.world = v.pos;
+                o.pos = mul (UNITY_MATRIX_VP, float4(v.pos,1.0f));
                 o.uv = v.uv;
-                o.pos = mul (UNITY_MATRIX_VP, float4(v.pos,1));
-                o.nor = normalize(-v.nor);//normalize(cross(v0.pos - v1.pos , v0.pos - v2.pos ));
+                o.nor = v.nor;
+                o.world = v.pos;
                 o.debug = v.debug;
-                o.eye = v.pos - _WorldSpaceCameraPos;
-                o.screenPos = ComputeScreenPos(float4(v.pos,1));
 
-                // in vert shader;
+                 half3 wNormal = v.nor;
+                half3 wTangent = v.tan;
+                // compute bitangent from cross product of normal and tangent
+                //half tangentSign = tangent.w * unity_WorldTransformParams.w;
+                half3 wBitangent = cross(wNormal, wTangent);// * tangentSign;
+                // output the tangent space matrix
+                o.tspace0 = half3(wTangent.x, wBitangent.x, wNormal.x);
+                o.tspace1 = half3(wTangent.y, wBitangent.y, wNormal.y);
+                o.tspace2 = half3(wTangent.z, wBitangent.z, wNormal.z);
+
+
 TRANSFER_VERTEX_TO_FRAGMENT(o);
                 return o;
             }
@@ -104,38 +122,38 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
             fixed4 frag (v2f v) : SV_Target
             {
 
-                float4 t1 = tex2D(_TextureMap , v.world.zy * .1 ) * abs(v.nor.x);
-                float4 t2 = tex2D(_TextureMap , v.world.xz * .1 ) * abs(v.nor.y);
-                float4 t3 = tex2D(_TextureMap , v.world.xy * .1 ) * abs(v.nor.z);
 
-                float4 t = tex2D(_TextureMap , v.uv * 4 );
+ // sample the normal map, and decode from the Unity encoding
+                half3 tnormal =UnpackNormal(tex2D(_NormalMap, v.uv));// lerp( i.norm ,  , specMap.x);
+                // transform normal from tangent to world space
+                half3 worldNormal;
+                worldNormal.x = dot(v.tspace0, tnormal);
+                worldNormal.y = dot(v.tspace1, tnormal);
+                worldNormal.z = dot(v.tspace2, tnormal);
+
+              // worldNormal = lerp( v.nor , worldNormal , tCol.x);
+          
+                half3 worldViewDir = normalize(UnityWorldSpaceViewDir(v.world));
+                //half3 worldRefl = reflect(-worldViewDir, worldNormal);
+                half3 worldRefl = refract(worldViewDir, worldNormal,.8);
+                half4 skyData = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, worldRefl);
+                half3 skyColor = DecodeHDR (skyData, unity_SpecCube0_HDR);
 
 
-               //float4 p1 = tex2D( _PLightMap1 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
-               //float4 p2 = tex2D( _PLightMap2 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
-               //float4 p3 = tex2D( _PLightMap3 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
-               //float4 p4 = tex2D( _PLightMap4 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
-               //float4 p5 = tex2D( _PLightMap5 , (v.debug * .3 + 1) * (v.screenPos.yx / v.screenPos.w) * 4 );
-           
-                 float4 tFinal = t1 + t2 + t3;
 
+                float3 tCol = texCUBE(_CubeMap,worldRefl);
+  float3 fNor = normalize(v.nor);
+                float m = 1-dot(_WorldSpaceLightPos0.xyz , fNor);
 
-                float3 fNor = v.nor;// + .9*float3( t1.x , t2.x, t3.x);
-                fNor = normalize( fNor );
+             
 
-                float3 refl = reflect( normalize( v.eye ), fNor );
-                float m = dot(_WorldSpaceLightPos0.xyz , fNor);
-
-                float fern = dot( normalize( v.eye ), normalize(fNor) );
- 
-
-//in frag shader;
+///in frag shader;
 float atten = LIGHT_ATTENUATION(v);
                 //m = 1-pow(-fern,.7);//*fern*fern;//pow( fern * fern, 1);
                 //m = saturate( 1-m );
- float4 p = tex2D( _PLightMap , v.uv * 10 );
 
-
+//                m = (-m* atten);
+ float4 p = tex2D( _PLightMap , v.uv * 3 );
                 m = 1-((1-m)*atten);
                 m *= 3;
 
@@ -160,30 +178,25 @@ float atten = LIGHT_ATTENUATION(v);
                 fLCol += p.z * weights.z;
                 fLCol += p.w * weights.w;
                 fLCol = 1-fLCol;
-
-
-
-
-
-                float4 s = texCUBE( _CubeMap , refl );
-                float4 s2 = tex2D( _ColorMap , float2(m* .1+_HueStart, 0) );
-
-                float fVal = (fLCol * .7 + .3) * s2;
-
-                float4 fCol =  fLCol *length(s)*.5 * s2;//tex2D(_ColorMap , float2(saturate(fVal * .2 + .4 - .1*v.debug),0)) * (1-fVal) * s;//(v.debug * .4+.3);
-               
-                //fCol.xyz = fNor * .5 + .5;//s*fLCol;//saturate( -fCol );
                 // sample the texture
-                fixed4 col =fCol;//afCol;//fCol;//(fLCol * .7 + .3) * s2;//(fLCol.x  * .8 + .2) * s2 * s;//float4( fNor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
+
+
+                float4 s3 = tex2D( _TextureMap , v.uv );
+                float4 s2 = tex2D( _ColorMap , float2(  m * _ColorRandomSize + _ColorStart , 0) );
+                float3 shiny = tex2D(_ShinyMap,v.uv);
+
+                float3 fCol=lerp( pow(length(tCol),3)* .3* s2*3, pow(length(tCol),3) * .1 * s2 ,shiny.x)  *_Saturation + _Brightness;//*shiny.x * fLCol;//fLCol*s3* skyColor;//v.nor * .5 + .5;
+                
+                fCol*= fLCol * 3;
+                //fCol = v.debug.x;
+                fixed4 col = float4(fCol,1);//fLCol;//float4( i.nor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
                 return col;
             }
 
             ENDCG
         }
 
-
-
-                   // SHADOW PASS
+                          // SHADOW PASS
 
     Pass
     {
@@ -208,7 +221,6 @@ float atten = LIGHT_ATTENUATION(v);
 
       #include "../Chunks/ShadowCasterPos.cginc"
 
-
             struct Vert{
       float3 pos;
       float3 vel;
@@ -219,7 +231,6 @@ float atten = LIGHT_ATTENUATION(v);
       float4 debug;
       float3 connections[16];
     };
-
 
 
       StructuredBuffer<Vert> _VertBuffer;
@@ -235,8 +246,8 @@ float atten = LIGHT_ATTENUATION(v);
       {
         v2f o;
         Vert v = _VertBuffer[_TriBuffer[id]];
-        o.nor = normalize( -v.nor);
-        float4 position = ShadowCasterPos(v.pos, normalize(-v.nor));
+        o.nor = normalize( v.nor);
+        float4 position = ShadowCasterPos(v.pos, normalize(v.nor));
         o.pos = UnityApplyLinearShadowBias(position);
         return o;
       }
@@ -247,7 +258,9 @@ float atten = LIGHT_ATTENUATION(v);
       }
       ENDCG
     }
-         Pass
+
+
+Pass
     {
 
 // Outline Pass
@@ -256,7 +269,7 @@ ZWrite OFF
 ZTest ON
 Stencil
 {
-Ref 5
+Ref 3
 Comp notequal
 Fail keep
 Pass replace
@@ -275,7 +288,7 @@ Pass replace
     
 
 
-               struct Vert{
+            struct Vert{
       float3 pos;
       float3 vel;
       float3 nor;
@@ -285,7 +298,6 @@ Pass replace
       float4 debug;
       float3 connections[16];
     };
-
 
             struct v2f { 
               float4 pos : SV_POSITION; 
@@ -301,7 +313,7 @@ Pass replace
 
         
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * .004;
+                float3 fPos = v.pos + v.nor * .02;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -312,7 +324,7 @@ Pass replace
             fixed4 frag (v2f v) : SV_Target
             {
               
-                fixed4 col = 0;//tex2D(_ColorMap, float2( .95,0));
+                fixed4 col = 0;//1;//tex2D(_ColorMap, float2( .8,0));
                 return col;
             }
 
@@ -324,9 +336,7 @@ Pass replace
 
   
   
-  
-  }
-
+    }
 
 FallBack "Diffuse"
 }

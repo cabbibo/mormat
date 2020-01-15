@@ -111,7 +111,7 @@ void Flow(uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID) {
   }else{
     float3 force = 0;
 
-    force += float3(0,.0002,0);
+    force += float3(0,.001,0);
 
     //force += normalize(mul( _Transform , float4(0,1,0,0)).xyz) * .0003;
     force += curlNoise( fPos * 4  + float3(0,_Time * .3,0)) * .0001;

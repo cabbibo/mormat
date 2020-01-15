@@ -13,6 +13,7 @@ int _HumanBuffer_COUNT;
 
 float _HumanRadius;
 float _HumanForce;
+float _HumanFalloff;
 
 int _HeadForce;
 
@@ -66,20 +67,20 @@ totalForce *= _HumanForce;
 
 
 
-float3 GetHumanRayToPoint( float3 pos ,  float4x4 transform ){
+float4 GetHumanRayToPoint( float3 pos ,  float4x4 transform ){
   
 
   float3 ro = mul( transform , float4(0,0,0,1)).xyz;
-  float3 rd = normalize(mul( transform , float4(0,0,1,0)).xyz);
-  float3 p2 = ro - rd * 200;
+  float3 rd = normalize(mul( transform , float4(0,0,-1,0)).xyz);
+  float3 p2 = ro - rd;
   float3 pa = pos - ro;
   float3 ba = ro - p2;
   float h =  dot(pa,ba)/dot(ba,ba);
-  float3 pOnLine = h * rd * 200 + ro;
+  float3 pOnLine = h * rd  + ro;
 
   float3 inLine = pos - pOnLine;
 
-  return inLine;
+  return float4( inLine , h);
 }
 
 
@@ -91,28 +92,34 @@ float3 HumanRayForces(float3 p){
     Human h = _HumanBuffer[i];
 
  
-    float3 d;
+    float4 d;
+    float v;
+    float falloffForce;
+
     d = GetHumanRayToPoint( p,h.leftHand );
-    if( length( d ) < _HumanRadius && length( d ) > .00001 ){ 
-      float v = (_HumanRadius - length( d )) / _HumanRadius;
-      totalForce += normalize( d ) * v;
+    if( length( d.xyz ) < _HumanRadius && length( d.xyz ) > .00001 ){ 
+      v = (_HumanRadius - length( d.xyz )) / _HumanRadius;
+      falloffForce = saturate(1-(d.a / _HumanFalloff)) * saturate(d.a * 1000);
+      totalForce +=  normalize( d.xyz ) * v;
     }
 
 
     d = GetHumanRayToPoint( p,h.rightHand );
-    if( length( d ) < _HumanRadius && length( d ) > .001 ){ 
+    if( length( d.xyz  ) < _HumanRadius && length( d.xyz  ) > .001 ){ 
 
-      float v = (_HumanRadius - length( d )) / _HumanRadius;
-      totalForce += normalize( d ) * v;
+      v = (_HumanRadius - length( d.xyz  )) / _HumanRadius;
+      falloffForce = saturate(1-(d.a / _HumanFalloff)) * saturate(d.a * 1000);
+      totalForce +=  normalize( d.xyz ) * v;
     }
 
     if(_HeadForce == 1){
 
 
     d = GetHumanRayToPoint( p,h.head );
-    if( length( d ) < _HumanRadius && length( d ) > .001 ){ 
-      float v = (_HumanRadius - length( d )) / _HumanRadius;
-      totalForce += normalize( d ) * v;
+    if( length( d.xyz  ) < _HumanRadius && length( d.xyz  ) > .001 ){ 
+      v = (_HumanRadius - length( d.xyz  )) / _HumanRadius;
+      falloffForce = saturate(1-(d.a / _HumanFalloff)) * saturate(d.a * 1000);
+      totalForce +=  normalize( d.xyz ) * v;
     }
 }
     

@@ -175,7 +175,7 @@ public class AudioSpacePup : Cycle
     
     velocity  *= _SpacePupToTargetDampening;
     
-    transform.position += velocity;
+    //transform.position += velocity;
 
 
     hairInfo.length = _HairLength;

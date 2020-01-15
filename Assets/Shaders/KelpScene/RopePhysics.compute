@@ -162,6 +162,7 @@ void Collision (uint threadID : SV_GroupIndex, uint3 u3GroupID : SV_GroupID, uin
     float3 force = float3(0,-10,0);//bN * _NormalForce;//float3( 0 , base.nor , 0.0 );
 
     force += HumanRayForces( vert.pos );
+    force += curlNoise( vert.pos + _Time ) * 20;
     // Inertia: objects in motion stay in motion.
     float3 vel = getVel( vert.pos , vert.oPos);
 

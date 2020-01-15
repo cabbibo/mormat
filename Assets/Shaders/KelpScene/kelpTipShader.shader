@@ -94,15 +94,20 @@ fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
 
                  float4 tCol = tex2D(_MainTex, v.uv );
                  float vL = length(v.uv-.5) ;
-                 if( length( tCol ) < .5){ discard; }
+                 if( length( tCol ) < .1){ discard; }
+
 
                   float match = dot(normalize(_WorldSpaceLightPos0.xyz), normalize(v.nor));
                  //if( vL > .4 ){ discard; }
                  float4 aCol = tex2D(_AudioMap,v.debug.y * .1 + float2( length(v.uv-.5) * .04 , 0) );
+                 float4 cCol = tex2D(_ColorMap,length(v.vel * 10) );
+
+                 float3 cubeCol = texCUBE(_CubeMap , normalize(v.vel));
                 fixed4 col = 1;
-                col.xyz =  aCol * aCol * 2 * (normalize(v.vel) *  .5 + .5) * clamp(length(v.vel) * 30, 0 ,1);//match;//saturate(match+.5)*1.1*tCol*tex2D(_ColorMap , float2( length( tCol) * .1 + sin(vL*10 + length(tCol)*10 - _Time.y*10  * sin(v.id/300)) * .04 + sin(v.id/1000) * .2+  _HueStart   + match *.2, 0) );//saturate(((_Time-v.debug.y) * 1 )) *  tex2D(_ColorMap , float2( length( tCol) * length( tCol ) * .1  + _HueStart , 0) )  * tCol* tCol;//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
-                
+                col.xyz =  cubeCol;//cCol;//match;//1;//aCol * aCol * 2 * (normalize(v.vel) *  .5 + .5) * clamp(length(v.vel) * 30, 0 ,1);//match;//saturate(match+.5)*1.1*tCol*tex2D(_ColorMap , float2( length( tCol) * .1 + sin(vL*10 + length(tCol)*10 - _Time.y*10  * sin(v.id/300)) * .04 + sin(v.id/1000) * .2+  _HueStart   + match *.2, 0) );//saturate(((_Time-v.debug.y) * 1 )) *  tex2D(_ColorMap , float2( length( tCol) * length( tCol ) * .1  + _HueStart , 0) )  * tCol* tCol;//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
+                if( vL > .3){ col = 0;}
                   //if( v.debug.x > .5 ){ col =float4(1,0,0,1);}
+                
                 return col;
             }
 
@@ -138,7 +143,7 @@ fixed shadow = UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
         // return 1;//float lookupVal =  max(min( uv.y * 2,( 1- uv.y ) ) * 1.5,0);//2 * tex2D(_MainTex,uv * float2(4 * saturate(min( uv.y * 4,( 1- uv.y ) )) ,.8) + float2(0,.2));
          // float4 tCol = tex2D(_MainTex, uv *   float2( 6,(lookupVal)* 1 ));
                           float4 tCol = tex2D(_MainTex, uv );
-                          return length( tCol);
+                          return length( tCol) * .3;
          // if( ( lookupVal + 1.3) - 1.2*length( tCol ) < .5 ){ return 0;}else{return 1;}
       }
 

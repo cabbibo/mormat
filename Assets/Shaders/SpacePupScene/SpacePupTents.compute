@@ -271,7 +271,7 @@ if( _FullScale != 0 ){
 
     float3 targetPos = base.pos + base.nor * vert.uv.x * vert.debug.x;
 
-    if( length( vert.pos - targetPos) > 4 ){
+    if( length( vert.pos - targetPos) > 40 ){
       tb = true;
       vert.pos = targetPos;
       vert.oPos = targetPos;

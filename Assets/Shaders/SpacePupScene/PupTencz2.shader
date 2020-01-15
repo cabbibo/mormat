@@ -60,7 +60,7 @@ ZFail keep
               float3 nor : NORMAL;
               float2 uv :TEXCOORD0; 
               float3 worldPos :TEXCOORD1;
-              float  kelpID :TEXCOORD3;
+              int  kelpID :TEXCOORD3;
               float3  eye :TEXCOORD4;
               float3  vel :TEXCOORD5;
               UNITY_SHADOW_COORDS(2)
@@ -85,7 +85,7 @@ ZFail keep
                 o.eye = v.pos - _WorldSpaceCameraPos;
                 o.vel = v.vel;
 
-                o.kelpID = v.debug.x;
+                o.kelpID = int(v.debug.x);
 
         UNITY_TRANSFER_SHADOW(o,o.worldPos);
 
@@ -100,7 +100,7 @@ ZFail keep
             fixed4 frag (v2f v) : SV_Target
             {
                 // sample the texture
-                fixed atten= UNITY_SHADOW_ATTENUATION(v,v.worldPos) * .5 + .5;
+                
                 float val = -dot(normalize(_WorldSpaceLightPos0.xyz),normalize(v.nor));// -DoShadowDiscard( i.worldPos , i.uv , i.nor );
 
                 float lookupVal =  max(min( v.uv.y * 2,( 1- v.uv.y ) ) * 1.5,0);//2 * tex2D(_MainTex,v.uv * float2(4 * saturate(min( v.uv.y * 4,( 1- v.uv.y ) )) ,.8) + float2(0,.2));
@@ -115,10 +115,11 @@ ZFail keep
                 float4 tCol = texCUBE(_CubeMap,refl);;// * color;
 
 
+        fixed atten= LIGHT_ATTENUATION(v);
 
                 float3 fNor = v.nor;
                 float m = dot(_WorldSpaceLightPos0.xyz , fNor);
- float4 p = tex2D( _PLightMap , v.uv * 3 );
+ float4 p = tex2D( _PLightMap , v.uv * 1.4 + sin(float(int(v.kelpID)) * 100));
                 m = 1-((1-m)*atten);
                 m *= 3;
 
@@ -147,9 +148,12 @@ ZFail keep
                // if( ( lookupVal + 1.3) - 1.2*length( tCol ) < .5 ){ discard;}
                // fixed4 col = float4( cCol , 1 ) * 2 * shadow * v.uv.x * 1.4 * tex2D(_ColorMap , float2( -length(tCol) * .2 * v.uv.x * v.uv.x*v.uv.x* .5 - val * .1  + sin( v.kelpID) * .02 +  _HueStart, 0) );// * saturate(20*-val);//* 20-10;//*tCol* lookupVal*4;//* 10 - 1;
                 
-                fixed4 col =  tex2D(_ColorMap,float2(v.uv.x  * .3+_HueStart, 0));
+                fixed4 col = .3 + .8* tex2D(_ColorMap,float2(v.uv.x  * .3 + m * .3+_HueStart, 0));
                 fixed4 aCol =  tex2D(_AudioMap,float2(v.uv.x  * .1 + (sin(v.kelpID * 100 ) * .3 + .3) , 0));
-                  col.xyz =aCol * tCol.xyz * (normalize(v.vel) * .5 + .5) * ( v.nor * .5 + .5 ) * 2;//fLCol * tCol * 2;//tex2D(_MainTex,v.uv * 5);
+                
+
+
+                col.xyz = tCol * tCol * 2 * fLCol + v.uv.x * v.uv.x;//aCol * tCol.xyz * (normalize(v.vel) * .5 + .5) * ( v.nor * .5 + .5 ) * 2;//fLCol * tCol * 2;//tex2D(_MainTex,v.uv * 5);
                  // col*=shadow;
                 return col;
             }
@@ -245,7 +249,7 @@ Pass replace
 
         
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * .002;
+                float3 fPos = v.pos + v.nor * .03;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -256,7 +260,7 @@ Pass replace
             fixed4 frag (v2f v) : SV_Target
             {
               
-                fixed4 col = 0;//tex2D(_ColorMap, float2( .95,0));//float4(1,0,0,1);
+                fixed4 col = 0;//.5 + .8*tex2D(_ColorMap, float2( .95,0));//float4(1,0,0,1);
                 return col;
             }
 

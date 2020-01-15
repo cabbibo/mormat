@@ -123,17 +123,18 @@ float3 terrarium = mul( _Terrarium , float4( vert.pos,1)).xyz;
     
  float m = -sdBox( mul( _Terrarium , float4( vert.pos,1)).xyz , float3(.43  ,.43,.43));
 
-   float3 eps = float3(.001 , 0, 0);
+   float3 eps = float3(.1 , 0, 0);
 
-   float3 boxSize = float3(.5,.5,.5);
+   float3 boxSize = float3(.43,.43,.43);
   float3 nor2 = float3(
       sdBox( mul( _Terrarium , float4( vert.pos + eps.xyy ,1)).xyz , boxSize) - sdBox( mul( _Terrarium , float4( vert.pos- eps.xyy ,1)).xyz , boxSize),
       sdBox( mul( _Terrarium , float4( vert.pos + eps.yxy ,1)).xyz , boxSize) - sdBox( mul( _Terrarium , float4( vert.pos- eps.yxy ,1)).xyz , boxSize),
       sdBox( mul( _Terrarium , float4( vert.pos + eps.yyx ,1)).xyz , boxSize) - sdBox( mul( _Terrarium , float4( vert.pos- eps.yyx ,1)).xyz , boxSize)
     );
 
+nor2 = normalize( nor2 );
   m = m/_FullScale;
-  nor2 = normalize(mul(_FullWTL,float4(terrarium,0)));
+ // nor2 = normalize(terrarium);//normalize(mul(_FullWTL,float4(terrarium,0)));
 
   if( m < 0 ){ force += .3*m *nor2; }//*nor2; }
 //  if( m < 0.1 ){ force += m; }//*nor2; }

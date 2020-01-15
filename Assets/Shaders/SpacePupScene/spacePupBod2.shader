@@ -137,10 +137,12 @@ TRANSFER_VERTEX_TO_FRAGMENT(o);
 float atten = LIGHT_ATTENUATION(v);
                 //m = 1-pow(-fern,.7);//*fern*fern;//pow( fern * fern, 1);
                 //m = saturate( 1-m );
- float4 p = tex2D( _PLightMap , v.uv * 10 );
+ float4 p = tex2D( _PLightMap , v.uv.yx * float2(1,5) * 3);
 
 
                 m = 1-((1-m)*atten);
+
+                float baseM = m;
                 m *= 3;
 
                 float4 fLCol = float4(1,0,0,0);
@@ -183,8 +185,19 @@ float atten = LIGHT_ATTENUATION(v);
                 //fCol.xyz = fNor * .5 + .5;//s*fLCol;//saturate( -fCol );
                 // sample the texture
                 fixed4 col =fCol;//afCol;//fCol;//(fLCol * .7 + .3) * s2;//(fLCol.x  * .8 + .2) * s2 * s;//float4( fNor * .5 + .5 , 1);//tex2D(_MainTex, i.uv);
-               
-                col.xyz =aCol* s * (normalize(v.vel) * .5 + .5);
+                
+
+                float3 velCol;
+                if( length( v.vel ) > .0000001){
+                  velCol = (normalize(v.vel)  * .5 + .5);
+                }else{
+                  velCol = .5;
+                }
+
+
+                col = .3 + 1* tex2D(_ColorMap,float2(baseM * .13  +_HueStart, 0));
+              
+                col.xyz =fLCol * s * s * 2;//col *  s * (1-baseM);// 1-saturate(saturate(aCol)* s * velCol);
                 //col = lerp( col ,fCol , length(col) * length(col));
                 return col;
             }
@@ -312,7 +325,7 @@ Pass replace
 
         
                 Vert v = _VertBuffer[_TriBuffer[vid]];
-                float3 fPos = v.pos + v.nor * .004;
+                float3 fPos = v.pos + v.nor * .1;
                 o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 
 
@@ -323,7 +336,7 @@ Pass replace
             fixed4 frag (v2f v) : SV_Target
             {
               
-                fixed4 col = 0;//tex2D(_ColorMap, float2( .95,0));
+                fixed4 col = 0;//.5 + .8 * tex2D(_ColorMap, float2( .95,0));//1;//tex2D(_ColorMap, float2( .5,0));
                 return col;
             }
 
